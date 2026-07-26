@@ -24,6 +24,9 @@ jobs:
       - uses: dorny/paths-filter@v3
         id: changes
         with:
+          # 'every' so a file must match '**' AND all the '!' exclusions;
+          # the default 'some' would match '**' alone and never subtract.
+          predicate-quantifier: every
           filters: |
             code:
               - '**'
