@@ -71,8 +71,10 @@
 
   .install{display:flex;align-items:stretch;gap:0;border:1px solid var(--rule);
     border-radius:11px;overflow:hidden;background:var(--panel);max-width:420px}
-  .install .cmd{font-family:var(--mono);font-size:14.5px;padding:13px 16px;flex:1;
+  .install .cmd{font-family:var(--mono);font-size:14.5px;padding:13px 16px;flex:1;min-width:0;
     display:flex;align-items:center;gap:10px;color:var(--fg)}
+  .install .cmd #cmd{white-space:nowrap;overflow-x:auto;scrollbar-width:none}
+  .install .cmd #cmd::-webkit-scrollbar{display:none}
   .install .cmd .pmt{color:var(--green)}
   .install button{border:0;border-left:1px solid var(--rule);background:var(--panel2);
     color:var(--dim);font-family:var(--mono);font-size:12.5px;padding:0 16px;cursor:pointer;
@@ -438,11 +440,11 @@
       <p class="eyebrow">your phone, not a pricey pocket gadget</p>
       <h1>Agent<span class="on">On</span>, <span class="hl">to go.</span></h1>
       <p class="lead">A dedicated pocket AI-coding device runs hundreds. But your session already lives on your computer — <b>AgentOn</b> just lets the phone in your pocket drive it. Start <b>claude</b> or <b>codex</b> at the desk, walk away, and pick up the same live session on your phone. <b>Free and open source</b> — the web client and the native iOS app both. Tailscale's free plan covers the rest.</p>
-      <div class="cta-row">
-        <a class="cta" href="https://github.com/nduwork/agenton-pocket#quickstart">Install guide on GitHub&nbsp;↗</a>
-        <a class="cta ghost" href="https://github.com/nduwork/agenton-pocket">View source</a>
+      <div class="install">
+        <div class="cmd"><span class="pmt">$</span><span id="cmd">curl -fsSL https://raw.githubusercontent.com/nduwork/agenton-pocket/main/install.sh | bash</span></div>
+        <button id="copy" aria-label="Copy install command">copy</button>
       </div>
-      <p class="subcmds">free &amp; open source · runs on your own machine, over your tailnet</p>
+      <p class="subcmds">then <span style="color:var(--cyan)">agenton</span> — daemon + TUI, all at once · <a href="https://github.com/nduwork/agenton-pocket">view source&nbsp;↗</a></p>
     </div>
 
     <div class="win rv" aria-hidden="true">
@@ -773,6 +775,14 @@
 </footer>
 
 <script>
+  // copy install command
+  var btn=document.getElementById('copy');
+  if(btn){btn.addEventListener('click',function(){
+    navigator.clipboard.writeText('curl -fsSL https://raw.githubusercontent.com/nduwork/agenton-pocket/main/install.sh | bash').then(function(){
+      var o=btn.textContent;btn.textContent='copied ✓';btn.style.color='var(--green)';
+      setTimeout(function(){btn.textContent=o;btn.style.color='';},1400);
+    });
+  });}
   // scroll reveal
   var io=new IntersectionObserver(function(es){
     es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
