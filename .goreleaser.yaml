@@ -18,6 +18,26 @@ builds:
     ldflags:
       - -s -w -X main.version={{ .Version }}   # stamps main.version (see cmd/agenton/main.go)
 
+# macOS code-signing + notarization. Runs on the Linux runner (goreleaser signs
+# and notarizes Mach-O via the embedded quill — no macOS runner needed), before
+# archiving, so the tarballs/deb/cask all carry the signed binary. Without this,
+# macOS Gatekeeper blocks the unsigned binary ("cannot verify … free of
+# malware"). Self-skips when the signing secrets are absent, so a release
+# without them still succeeds. See docs/RELEASING.md for how to set the secrets.
+notarize:
+  macos:
+    - enabled: '{{ isEnvSet "MACOS_SIGN_P12" }}'
+      ids: [agenton]
+      sign:
+        certificate: "{{ .Env.MACOS_SIGN_P12 }}"       # base64 of the Developer ID .p12
+        password: "{{ .Env.MACOS_SIGN_PASSWORD }}"     # .p12 export password
+      notarize:
+        issuer_id: "{{ .Env.MACOS_NOTARY_ISSUER_ID }}" # App Store Connect API issuer UUID
+        key_id: "{{ .Env.MACOS_NOTARY_KEY_ID }}"       # App Store Connect API key ID
+        key: "{{ .Env.MACOS_NOTARY_KEY }}"             # base64 of the .p8 API key
+        wait: true
+        timeout: 20m
+
 archives:
   - id: agenton
     formats: [tar.gz]
