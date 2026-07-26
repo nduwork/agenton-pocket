@@ -60,7 +60,7 @@ jobs:
           echo "skip=false" >> "$GITHUB_OUTPUT"
           echo "version=$next" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         if: steps.decide.outputs.skip != 'true'
         with:
           go-version-file: go.mod
