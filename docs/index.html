@@ -3,15 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>agenton — run your coding agents anywhere</title>
+<title>AgentOn — run your coding agents anywhere</title>
 <meta name="description" content="Run claude, codex, or any CLI agent in daemon-owned sessions and drive them from a desktop TUI, a phone, or a native iOS app. Sessions survive detach.">
 <style>
   :root{
-    --bg:#0c0e12; --panel:#14171d; --panel2:#181c24; --rule:#242a35;
-    --fg:#e7eaf1; --dim:#8b93a3; --faint:#5c6473;
-    --cyan:#3ad3d3; --green:#4bd67f; --amber:#f0883e; --iris:#8b9cff; --mag:#c98bdf;
+    /* Tokyo Night — carried over from the iOS app (Theme.swift) and the web
+       client (internal/web/static/style.css) so all three read as one product. */
+    --bg:#0f1115; --panel:#161923; --panel2:#1b1f2b; --rule:#262b36;
+    --fg:#d8dee9; --dim:#6b7280; --faint:#565f73;
+    --cyan:#7aa2f7; --green:#9ece6a; --amber:#ff9e64; --iris:#bb9af7; --mag:#bb9af7;
     --mono:ui-monospace,"SF Mono","JetBrains Mono","Menlo",monospace;
     --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Inter",system-ui,sans-serif;
+    --rounded:"SF Pro Rounded",ui-rounded,-apple-system,"Segoe UI",system-ui,sans-serif;
     --maxw:1080px;
   }
   *{box-sizing:border-box}
@@ -22,8 +25,8 @@
     font-family:var(--sans); line-height:1.6; letter-spacing:-.01em;
     -webkit-font-smoothing:antialiased;
     background-image:
-      radial-gradient(1200px 600px at 80% -10%, rgba(58,211,211,.06), transparent 60%),
-      radial-gradient(900px 500px at 0% 10%, rgba(139,156,255,.05), transparent 55%);
+      radial-gradient(1200px 600px at 80% -10%, rgba(122,162,247,.07), transparent 60%),
+      radial-gradient(900px 500px at 0% 10%, rgba(187,154,250,.05), transparent 55%);
     background-attachment:fixed;
   }
   a{color:var(--cyan);text-decoration:none}
@@ -36,10 +39,15 @@
     backdrop-filter:blur(10px);background:rgba(12,14,18,.72);
     border-bottom:1px solid var(--rule)}
   .top .wrap{display:flex;align-items:center;gap:20px;height:58px}
-  .brand{font-family:var(--mono);font-weight:700;font-size:16px;letter-spacing:-.02em;
-    color:var(--fg);display:flex;align-items:center;gap:9px}
-  .brand .dot{width:8px;height:8px;border-radius:50%;background:var(--green);
-    box-shadow:0 0 0 0 rgba(75,214,127,.55);animation:pulse 2.4s infinite}
+  /* Wordmark mirrors the iOS entry screen (EntryView.swift): "Agent" in fg,
+     "On" lit green with a glow + a small pulsing green dot — the session stays
+     *on* after you walk away. Rounded-heavy to match the app. */
+  .brand{font-family:var(--rounded);font-weight:800;font-size:19px;letter-spacing:-.005em;
+    color:var(--fg);display:flex;align-items:baseline;gap:0}
+  .brand .on{color:var(--green);text-shadow:0 0 9px rgba(158,206,106,.55)}
+  .brand .dot{width:6px;height:6px;border-radius:50%;background:var(--green);align-self:center;
+    margin-left:5px;box-shadow:0 0 7px rgba(158,206,106,.9),0 0 0 0 rgba(158,206,106,.55);
+    animation:pulse 2.4s infinite}
   .top nav{margin-left:auto;display:flex;gap:24px;align-items:center;
     font-size:14px;font-family:var(--mono);color:var(--dim)}
   .top nav a{color:var(--dim)}
@@ -57,22 +65,29 @@
   h1{font-family:var(--mono);font-weight:700;font-size:clamp(38px,6.2vw,62px);
     line-height:1.02;letter-spacing:-.035em;margin:0 0 20px}
   h1 .hl{color:var(--cyan)}
+  h1 .on{color:var(--green);text-shadow:0 0 16px rgba(158,206,106,.4)}
   .lead{font-size:19px;color:var(--dim);max-width:33ch;margin:0 0 30px}
   .lead b{color:var(--fg);font-weight:600}
 
   .install{display:flex;align-items:stretch;gap:0;border:1px solid var(--rule);
     border-radius:11px;overflow:hidden;background:var(--panel);max-width:420px}
-  .install .cmd{font-family:var(--mono);font-size:14.5px;padding:13px 16px;flex:1;min-width:0;
+  .install .cmd{font-family:var(--mono);font-size:14.5px;padding:13px 16px;flex:1;
     display:flex;align-items:center;gap:10px;color:var(--fg)}
-  .install .cmd #cmd{white-space:nowrap;overflow-x:auto;scrollbar-width:none}
-  .install .cmd #cmd::-webkit-scrollbar{display:none}
   .install .cmd .pmt{color:var(--green)}
   .install button{border:0;border-left:1px solid var(--rule);background:var(--panel2);
     color:var(--dim);font-family:var(--mono);font-size:12.5px;padding:0 16px;cursor:pointer;
     transition:color .15s,background .15s}
   .install button:hover{color:var(--cyan);background:#1d222c}
-  .subcmds{font-family:var(--mono);font-size:13px;color:var(--faint);margin:14px 0 0}
+  .subcmds{font-family:var(--mono);font-size:13px;color:var(--faint);margin:16px 0 0}
   .subcmds b{color:var(--dim);font-weight:400}
+  /* installation lives on the repo — the hero just points there */
+  .cta-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .cta{display:inline-flex;align-items:center;gap:8px;background:var(--cyan);color:#0b1220;
+    font-family:var(--mono);font-weight:600;font-size:14.5px;padding:12px 20px;border-radius:10px;
+    border:1px solid transparent;transition:filter .15s,transform .15s}
+  .cta:hover{filter:brightness(1.08);text-decoration:none;transform:translateY(-1px)}
+  .cta.ghost{background:transparent;color:var(--fg);border-color:var(--rule)}
+  .cta.ghost:hover{border-color:var(--cyan);filter:none}
 
   /* hero window (live session list) */
   .win{border:1px solid var(--rule);border-radius:12px;background:#0f1218;
@@ -93,12 +108,12 @@
   .row .ag{color:var(--dim);text-align:right}
   .row .st{color:var(--green);display:flex;align-items:center;gap:7px;justify-content:flex-end}
   .row .st .d{width:7px;height:7px;border-radius:50%;background:var(--green);
-    box-shadow:0 0 6px rgba(75,214,127,.8);animation:pulse 2.4s infinite}
+    box-shadow:0 0 6px rgba(158,206,106,.8);animation:pulse 2.4s infinite}
   .row .car{color:var(--cyan);opacity:0}
   .row.sel .car{opacity:1}
   .keys{margin-top:16px;color:var(--faint);font-size:12.5px}
   .keys b{color:var(--cyan);font-weight:400}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(75,214,127,.5)}70%{box-shadow:0 0 0 7px rgba(75,214,127,0)}100%{box-shadow:0 0 0 0 rgba(75,214,127,0)}}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(158,206,106,.5)}70%{box-shadow:0 0 0 7px rgba(158,206,106,0)}100%{box-shadow:0 0 0 0 rgba(158,206,106,0)}}
   @media(prefers-reduced-motion:reduce){.brand .dot,.row .st .d{animation:none}}
 
   /* ---------- generic section ---------- */
@@ -180,7 +195,7 @@
   .phone{max-width:270px;margin:0 auto;border:8px solid #1b1f27;border-radius:40px;
     overflow:hidden;background:#000;box-shadow:0 28px 60px -22px rgba(0,0,0,.75);
     position:relative}
-  .phone img{display:block;width:100%}
+  .phone img{display:block;width:100%;height:auto}
   .phones-2{display:flex;gap:20px;justify-content:center;flex-wrap:wrap}
 
   /* ---------- "to go": the controller drives your TUI ---------- */
@@ -229,8 +244,9 @@
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
     font-family:var(--mono);font-size:8px;color:var(--dim)}
   .bp .k .i{font-size:12px;line-height:1}
-  .bp .k.g{color:var(--green)} .bp .k.rd{color:#ff5f6b} .bp .k.ir{color:var(--iris)}
-  .bp .k.cu{border-style:dashed;border-color:rgba(139,156,255,.55);color:var(--iris)}
+  .bp .k.g{color:var(--green)} .bp .k.rd{color:var(--warn)} .bp .k.ir{color:var(--iris)}
+  .bp .k.ac{color:var(--cyan)}
+  .bp .k.cu{border-style:dashed;border-color:rgba(122,162,247,.55);color:var(--cyan)}
 
   /* landscape controller phone — header · pad · message bar, like the app */
   .ctl-phone{display:flex;flex-direction:column;gap:13px;align-items:center}
@@ -253,7 +269,7 @@
   .ctl-cap{font-family:var(--mono);font-size:11.5px;color:var(--faint);text-align:center}
   .ctl-cap b{color:var(--iris);font-weight:400}
 
-  /* one loop (8s): tap Down→Accept drives the TUI, then hold the mic to talk */
+  /* one loop (8s): tap Down→Enter drives the session, then hold the mic to talk */
   @keyframes kd{0%,6%{background:var(--panel);box-shadow:none;transform:none}
     9%,12%{background:#212b3a;box-shadow:0 0 0 1.5px var(--cyan) inset;transform:scale(.92)}
     15%,100%{background:var(--panel);box-shadow:none;transform:none}}
@@ -267,12 +283,14 @@
 
   @media(prefers-reduced-motion:reduce){
     .ctl-body .opt1 .m,.ctl-body .opt2 .m,.ctl-body .prompt,.ctl-body .result,
-    .scr-land .kdown,.scr-land .kacc,.scr-land .talk{animation:none}
+    .scr-land .kdown,.scr-land .kacc,.scr-land .talk,
+    .scr-p .kup,.scr-p .ksend,.scr-p .phld,.scr-p .typed,.scr-p .more,.scr-p .car2,
+    .scr-p .pterm .sent{animation:none}
     .ctl-body .opt2 .m{opacity:0}.ctl-body .result{opacity:0}
   }
 
   /* ---------- phone mode (portrait) ---------- */
-  .scr-p{aspect-ratio:9/17.5;max-width:224px;width:100%;margin:0 auto;background:#0a0c10;
+  .scr-p{aspect-ratio:9/17.5;max-width:248px;width:100%;margin:0 auto;background:#0a0c10;
     border:7px solid #1b1f27;border-radius:30px;overflow:hidden;display:flex;flex-direction:column;
     box-shadow:0 22px 46px -24px rgba(0,0,0,.7)}
   .scr-p .ph{display:flex;align-items:center;gap:7px;padding:9px 11px 7px;font-family:var(--mono);
@@ -286,10 +304,37 @@
   .scr-p .bp .k{aspect-ratio:1/.7}
   .scr-p .tbar{display:flex;align-items:center;gap:6px;padding:4px 9px 10px}
   .scr-p .tbar .fld{flex:1;border:1px solid var(--rule);border-radius:8px;background:var(--panel);
-    padding:6px 8px;color:var(--faint);font-size:7.5px}
+    padding:6px 8px;color:var(--faint);font-size:8px;position:relative;overflow:hidden;
+    white-space:nowrap;min-height:16px;display:flex;align-items:center}
   .scr-p .tbar .mic{color:var(--dim);font-size:12px}
-  .scr-p .tbar .snd{width:19px;height:19px;border-radius:50%;background:var(--panel);color:var(--faint);
-    display:flex;align-items:center;justify-content:center;font-size:9px;flex:0 0 auto}
+
+  /* phone-mode key-action demo (10s loop): tap Up → an old prompt is recalled →
+     a few words type in → tap Enter → it submits and the field clears. Distinct
+     from the controller (which just shows a tap); this walks a real edit+send. */
+  .scr-p .fld .phld{animation:pmPh 10s infinite}
+  .scr-p .fld .typed{position:absolute;left:8px;right:6px;opacity:0;color:var(--fg);
+    animation:pmTyped 10s infinite}
+  .scr-p .fld .recall{color:var(--fg)}
+  .scr-p .fld .more{display:inline-block;overflow:hidden;white-space:nowrap;vertical-align:bottom;
+    width:0;color:var(--cyan);animation:pmMore 10s steps(9) infinite}
+  .scr-p .fld .car2{color:var(--cyan);animation:pmCar 1s steps(2) infinite}
+  .scr-p .kup{animation:pmUp 10s infinite}
+  .scr-p .ksend{animation:pmSend 10s infinite}
+  @keyframes pmUp{0%,9%{background:var(--panel);box-shadow:none;transform:none}
+    12%,15%{background:#1b2740;box-shadow:0 0 0 1.5px var(--cyan) inset;transform:scale(.93)}
+    18%,100%{background:var(--panel);box-shadow:none;transform:none}}
+  @keyframes pmSend{0%,45%{background:var(--panel);box-shadow:none;transform:none}
+    49%,53%{background:#16281d;box-shadow:0 0 0 1.5px var(--green) inset;transform:scale(.93)}
+    57%,100%{background:var(--panel);box-shadow:none;transform:none}}
+  @keyframes pmPh{0%,12%{opacity:1}15%,56%{opacity:0}59%,100%{opacity:1}}
+  @keyframes pmTyped{0%,13%{opacity:0}16%,55%{opacity:1}57%,100%{opacity:0}}
+  @keyframes pmMore{0%,27%{width:0}44%,55%{width:9ch}57%,100%{width:0}}
+  @keyframes pmCar{0%{opacity:1}50%,100%{opacity:0}}
+  /* the submitted message lands in the transcript right after Enter fires —
+     so the send visibly does something (the session is live, not a dead mock). */
+  .scr-p .pterm .sent{opacity:0;animation:pmSent 10s infinite}
+  .scr-p .pterm .ed{color:var(--cyan)}
+  @keyframes pmSent{0%,54%{opacity:0}59%,90%{opacity:1}95%,100%{opacity:0}}
 
   .ctlwrap{margin-top:48px}
   /* match the phone-mode (.step) intro treatment exactly, for a consistent look */
@@ -316,7 +361,7 @@
   @keyframes segB{0%,44%{color:var(--dim)}56%,94%{color:var(--bg)}100%{color:var(--dim)}}
   .seg-cap{font-family:var(--mono);font-size:12.5px;color:var(--faint);text-align:center;max-width:52ch}
   /* the screen actually flips between the two modes, synced to the toggle */
-  .flip-stage{position:relative;width:100%;height:470px;margin-top:4px}
+  .flip-stage{position:relative;width:100%;height:500px;margin-top:4px}
   .flip-stage .layer{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
   .flip-stage .m-phone{animation:flipPhone 5s infinite}
   .flip-stage .m-ctrl{animation:flipCtrl 5s infinite}
@@ -375,7 +420,7 @@
 
 <header class="top">
   <div class="wrap">
-    <span class="brand"><span class="dot"></span>agenton</span>
+    <span class="brand">Agent<span class="on">on</span><span class="dot"></span>&nbsp;Pocket</span>
     <nav>
       <a class="navlink" href="#modes">modes</a>
       <a class="navlink" href="#switch">switch</a>
@@ -391,13 +436,13 @@
   <div class="wrap">
     <div class="txt">
       <p class="eyebrow">your phone, not a pricey pocket gadget</p>
-      <h1>Agenton, <span class="hl">to go.</span></h1>
-      <p class="lead">A dedicated pocket AI-coding device runs hundreds. But your session already lives on your computer — <b>agenton</b> just lets the phone in your pocket drive it. Start <b>claude</b> or <b>codex</b> at the desk, walk away, and pick up the same live session on your phone. The webapp's free; go native with the iOS app for an even better experience — a <b>one-time $4.99</b>, buy me a coffee ☕. Tailscale is free for up to 3 users.</p>
-      <div class="install">
-        <div class="cmd"><span class="pmt">$</span><span id="cmd">curl -fsSL https://raw.githubusercontent.com/nduwork/agenton-pocket/main/install.sh | bash</span></div>
-        <button id="copy" aria-label="Copy install command">copy</button>
+      <h1>Agent<span class="on">On</span>, <span class="hl">to go.</span></h1>
+      <p class="lead">A dedicated pocket AI-coding device runs hundreds. But your session already lives on your computer — <b>AgentOn</b> just lets the phone in your pocket drive it. Start <b>claude</b> or <b>codex</b> at the desk, walk away, and pick up the same live session on your phone. <b>Free and open source</b> — the web client and the native iOS app both. Tailscale's free plan covers the rest.</p>
+      <div class="cta-row">
+        <a class="cta" href="https://github.com/nduwork/agenton-pocket#quickstart">Install guide on GitHub&nbsp;↗</a>
+        <a class="cta ghost" href="https://github.com/nduwork/agenton-pocket">View source</a>
       </div>
-      <p class="subcmds">then just <b>&nbsp;</b><span style="color:var(--cyan)">agenton</span><b>&nbsp; — daemon + TUI, all at once</b></p>
+      <p class="subcmds">free &amp; open source · runs on your own machine, over your tailnet</p>
     </div>
 
     <div class="win rv" aria-hidden="true">
@@ -405,8 +450,8 @@
       <div class="term">
         <div class="title">agenton</div>
         <hr class="hr">
-        <div class="row sel"><span class="car">▶</span><span class="nm">acme-api</span><span class="ag">Claude</span><span class="st"><span class="d"></span>running</span></div>
-        <div class="row"><span class="id">#2</span><span class="nm">billing-svc</span><span class="ag">Codex</span><span class="st"><span class="d"></span>running</span></div>
+        <div class="row sel"><span class="car">▶</span><span class="nm">agenton</span><span class="ag">Claude</span><span class="st"><span class="d"></span>running</span></div>
+        <div class="row"><span class="id">#2</span><span class="nm">acme-api</span><span class="ag">Claude</span><span class="st"><span class="d"></span>running</span></div>
         <div class="row"><span class="id">#3</span><span class="nm">dotfiles</span><span class="ag">Zsh</span><span class="st"><span class="d"></span>running</span></div>
         <div class="keys"><b>[enter]</b> attach&nbsp;&nbsp; <b>[n]</b> new&nbsp;&nbsp; <b>[d]</b> kill&nbsp;&nbsp; <b>[r]</b> refresh&nbsp;&nbsp; <b>[q]</b> quit</div>
       </div>
@@ -430,37 +475,39 @@
         <p class="note">It's <b>fully drivable</b>, not a viewer: type or tap and the agent reflows to your phone.</p>
       </div>
       <div class="scr-p" aria-hidden="true">
-        <div class="ph"><span class="bk">‹ back</span><span class="tt">acme-api · Claude</span><span class="ic">Aa</span><span class="ic">⟳</span><span class="ic">⌨</span></div>
+        <div class="ph"><span class="bk">‹ back</span><span class="tt">acme-api · Claude</span><span class="ic">Aa</span><span class="ic">⟳</span><span class="ic">⧉</span></div>
         <div class="pterm">
-          <div>~/acme-api $ <span class="fg">claude</span></div>
           <div class="fg">✻ Welcome to Claude Code</div>
-          <div><span class="p">&gt;</span> add retry to webhook</div>
-          <div><span class="p">●</span> I'll add jittered backoff.</div>
+          <div>&nbsp;&nbsp;cwd: ~/acme-api</div>
+          <div><span class="p">&gt;</span> add retry with backoff to the webhook sender</div>
+          <div><span class="p">●</span> Adding jittered backoff to sender.go.</div>
           <div><span class="p">●</span> Read sender.go</div>
           <div>&nbsp;&nbsp;⎿ 142 lines</div>
           <div><span class="p">●</span> Update sender.go</div>
-          <div>&nbsp;&nbsp;⎿ <span class="fg">+18 −7</span></div>
-          <div><span class="p">●</span> go test ./…</div>
+          <div>&nbsp;&nbsp;⎿ retryWithBackoff <span class="fg">+18 −7</span></div>
+          <div><span class="p">●</span> go test ./internal/webhook/…</div>
           <div>&nbsp;&nbsp;⎿ <span class="fg">ok</span> 0.41s</div>
-          <div><span class="p">●</span> retry with backoff…</div>
-          <div class="fg">run tests? (y/n)</div>
-          <div>▍</div>
+          <div><span class="p">●</span> Done — retries 3×. Run the full suite?</div>
+          <div class="sent">
+            <div><span class="p">&gt;</span> run the full suite <span class="ed">· verbose</span></div>
+            <div><span class="p">●</span> Running 214 tests…▍</div>
+          </div>
         </div>
         <div class="bp">
-          <div class="k g"><span class="i">⏎</span>Accept</div>
-          <div class="k"><span class="i">✕</span>Reject</div>
-          <div class="k ir"><span class="i">☰</span>Mode</div>
-          <div class="k rd"><span class="i">■</span>Stop/Esc</div>
-          <div class="k ir"><span class="i">✎</span>New</div>
+          <div class="k g ksend"><span class="i">⏎</span>Enter</div>
+          <div class="k ac"><span class="i">☰</span>Mode</div>
+          <div class="k rd"><span class="i">■</span>Esc</div>
+          <div class="k rd"><span class="i">⏻</span>Exit ⌃C</div>
+          <div class="k ac"><span class="i">✎</span>New</div>
           <div class="k cu"><span class="i">☆</span>Custom 1</div>
-          <div class="k"><span class="i">▲</span>Up</div>
-          <div class="k cu"><span class="i">☆</span>Custom 2</div>
+          <div class="k kup"><span class="i">▲</span>Up</div>
+          <div class="k cu"><span class="i">☆</span>/compact</div>
           <div class="k"><span class="i">↺</span>Rewind</div>
           <div class="k"><span class="i">◀</span>Left</div>
           <div class="k"><span class="i">▼</span>Down</div>
           <div class="k"><span class="i">▶</span>Right</div>
         </div>
-        <div class="tbar"><span class="fld">type a message…</span><span class="mic">◉</span><span class="snd">↑</span></div>
+        <div class="tbar"><span class="fld"><span class="phld">type a message…</span><span class="typed"><span class="recall">run the full suite</span> <span class="more">· verbose</span><span class="car2">▏</span></span></span><span class="mic">◉</span></div>
       </div>
     </div>
 
@@ -488,19 +535,19 @@
         </div>
         <div class="ctl-phone">
           <div class="scr-land" aria-hidden="true">
-            <div class="lh"><span class="bk">‹ back</span><span class="tt">acme-api · Claude</span><span class="ic">Aa</span><span class="ic">⟳</span><span class="ic">⌨</span></div>
+            <div class="lh"><span class="bk">‹ back</span><span class="tt">acme-api · Claude</span><span class="ic">Aa</span><span class="ic">⟳</span><span class="ic">⧉</span></div>
             <div class="bp">
-              <div class="k g kacc"><span class="i">⏎</span>Accept</div>
-              <div class="k"><span class="i">✕</span>Reject</div>
-              <div class="k ir"><span class="i">☰</span>Mode</div>
-              <div class="k rd"><span class="i">■</span>Stop/Esc</div>
-              <div class="k ir"><span class="i">✎</span>New</div>
+              <div class="k g kacc"><span class="i">⏎</span>Enter</div>
+              <div class="k ac"><span class="i">☰</span>Mode</div>
+              <div class="k rd"><span class="i">■</span>Esc</div>
+              <div class="k rd"><span class="i">⏻</span>Exit ⌃C</div>
+              <div class="k ac"><span class="i">✎</span>New</div>
               <div class="k"><span class="i">↺</span>Rewind</div>
               <div class="k cu"><span class="i">☆</span>Custom 1</div>
-              <div class="k"><span class="i">▲</span>Up</div>
-              <div class="k cu"><span class="i">☆</span>Custom 2</div>
+              <div class="k kdown"><span class="i">▲</span>Up</div>
+              <div class="k cu"><span class="i">☆</span>/compact</div>
               <div class="k"><span class="i">◀</span>Left</div>
-              <div class="k kdown"><span class="i">▼</span>Down</div>
+              <div class="k"><span class="i">▼</span>Down</div>
               <div class="k"><span class="i">▶</span>Right</div>
             </div>
             <div class="lt">
@@ -548,14 +595,14 @@
               <div>▍</div>
             </div>
             <div class="bp">
-              <div class="k g"><span class="i">⏎</span>Accept</div><div class="k"><span class="i">✕</span>Reject</div>
-              <div class="k ir"><span class="i">☰</span>Mode</div><div class="k rd"><span class="i">■</span>Stop/Esc</div>
-              <div class="k ir"><span class="i">✎</span>New</div><div class="k cu"><span class="i">☆</span>Custom 1</div>
-              <div class="k"><span class="i">▲</span>Up</div><div class="k cu"><span class="i">☆</span>Custom 2</div>
+              <div class="k g"><span class="i">⏎</span>Enter</div><div class="k ac"><span class="i">☰</span>Mode</div>
+              <div class="k rd"><span class="i">■</span>Esc</div><div class="k rd"><span class="i">⏻</span>Exit ⌃C</div>
+              <div class="k ac"><span class="i">✎</span>New</div><div class="k cu"><span class="i">☆</span>Custom 1</div>
+              <div class="k"><span class="i">▲</span>Up</div><div class="k cu"><span class="i">☆</span>/compact</div>
               <div class="k"><span class="i">↺</span>Rewind</div><div class="k"><span class="i">◀</span>Left</div>
               <div class="k"><span class="i">▼</span>Down</div><div class="k"><span class="i">▶</span>Right</div>
             </div>
-            <div class="tbar"><span class="fld">type a message…</span><span class="mic">◉</span><span class="snd">↑</span></div>
+            <div class="tbar"><span class="fld">type a message…</span><span class="mic">◉</span></div>
           </div>
         </div>
         <!-- controller: landscape, pad + hold-to-talk, no text field -->
@@ -563,9 +610,9 @@
           <div class="scr-land">
             <div class="lh"><span class="bk">‹ back</span><span class="tt">acme-api · Claude</span><span class="ic">Aa</span><span class="ic">⟳</span><span class="ic">⌨</span></div>
             <div class="bp">
-              <div class="k g"><span class="i">⏎</span>Accept</div><div class="k"><span class="i">✕</span>Reject</div><div class="k ir"><span class="i">☰</span>Mode</div>
-              <div class="k rd"><span class="i">■</span>Stop/Esc</div><div class="k ir"><span class="i">✎</span>New</div><div class="k"><span class="i">↺</span>Rewind</div>
-              <div class="k cu"><span class="i">☆</span>Custom 1</div><div class="k"><span class="i">▲</span>Up</div><div class="k cu"><span class="i">☆</span>Custom 2</div>
+              <div class="k g"><span class="i">⏎</span>Enter</div><div class="k ac"><span class="i">☰</span>Mode</div><div class="k rd"><span class="i">■</span>Esc</div>
+              <div class="k rd"><span class="i">⏻</span>Exit ⌃C</div><div class="k ac"><span class="i">✎</span>New</div><div class="k"><span class="i">↺</span>Rewind</div>
+              <div class="k cu"><span class="i">☆</span>Custom 1</div><div class="k"><span class="i">▲</span>Up</div><div class="k cu"><span class="i">☆</span>/compact</div>
               <div class="k"><span class="i">◀</span>Left</div><div class="k"><span class="i">▼</span>Down</div><div class="k"><span class="i">▶</span>Right</div>
             </div>
             <div class="lt"><span class="talk"><span class="mic">◉</span> Hold to talk</span></div>
@@ -709,49 +756,15 @@
       <div class="feat"><h3><span class="k">◉</span> Press-to-talk</h3><p>Hold the mic in the message bar and dictate — on-device speech drops the transcript in to review, then send. Skip thumb-typing long prompts.</p></div>
       <div class="feat"><h3><span class="k">⚿</span> Tailnet is the auth</h3><p>agenton rides the Tailscale app you already run — no extra node to approve, free plan is fine. Only devices on your tailnet can reach it — that's the whole model.</p></div>
       <div class="feat"><h3><span class="k">▦</span> Scan to pair</h3><p><span class="mono">agenton qr</span> prints a code; the iOS app reads it and you're connected. No IP addresses, no typing.</p></div>
-      <div class="feat"><h3><span class="k">◇</span> One-command install</h3><p>A <span class="mono">curl … | bash</span> one-liner (or <span class="mono">go install</span>) puts the binary on your PATH — no clone, no daemon to configure. One small binary. Then <span class="mono">agenton</span>.</p></div>
+      <div class="feat"><h3><span class="k">◇</span> One-command install</h3><p><span class="mono">./install.sh</span> fetches a prebuilt release (or builds from source if Go's present) and puts one small binary on your PATH — no daemon to configure. Then <span class="mono">agenton</span>.</p></div>
       <div class="feat"><h3><span class="k">⤾</span> Take it to go</h3><p>Get up mid-run and the same session flips to the pocket controller — nothing stops, nothing reconnects. Land back at the desk and pick up where you left off.</p></div>
-    </div>
-  </div>
-</section>
-
-<!-- QUICKSTART -->
-<section id="start">
-  <div class="wrap">
-    <p class="sec-eyebrow">two minutes</p>
-    <h2>Quickstart.</h2>
-    <div class="qs">
-      <div class="codeblock rv">
-        <div class="cbar">on the machine your agents run on</div>
-<pre><span class="c"># install agenton (needs the Tailscale app running for phone access)</span>
-$ <span class="g">curl -fsSL https://raw.githubusercontent.com/nduwork/agenton-pocket/main/install.sh | bash</span>
-
-<span class="c"># start everything + drop into the TUI</span>
-$ <span class="cy">agenton</span>
-
-<span class="c"># headless server (no TUI)</span>
-$ <span class="cy">agenton</span> up -no-tui
-
-<span class="c"># reprint the phone-pairing QR any time</span>
-$ <span class="cy">agenton</span> qr</pre>
-      </div>
-      <div class="desc">
-        <h3>1 · Install once</h3>
-        <p>One command puts <span class="m">agenton</span> on your PATH. Have the Tailscale app running and that's it — no login link, no node to approve.</p>
-        <h3>2 · Run it</h3>
-        <p>Bare <span class="m">agenton</span> starts the daemon and drops you into the TUI, and publishes the session over your tailnet for the phone.</p>
-        <h3>3 · Pair your phone</h3>
-        <p>Install Tailscale on the phone, sign in with the same account, then scan the QR in the iOS app's settings. Sessions load.</p>
-        <h3>4 · Work from anywhere</h3>
-        <p>Start an agent at the desk, leave, and pick the same session back up on your phone. It never stopped running.</p>
-      </div>
     </div>
   </div>
 </section>
 
 <footer>
   <div class="wrap">
-    <span class="brand"><span class="dot"></span>agenton</span>
+    <span class="brand">Agent<span class="on">on</span><span class="dot"></span>&nbsp;Pocket</span>
     <span class="meta">open source · <a href="https://github.com/nduwork/agenton-pocket">github.com/nduwork/agenton-pocket</a></span>
   </div>
   <div class="wrap">
@@ -760,14 +773,6 @@ $ <span class="cy">agenton</span> qr</pre>
 </footer>
 
 <script>
-  // copy install command
-  var btn=document.getElementById('copy');
-  btn.addEventListener('click',function(){
-    navigator.clipboard.writeText('curl -fsSL https://raw.githubusercontent.com/nduwork/agenton-pocket/main/install.sh | bash').then(function(){
-      var o=btn.textContent;btn.textContent='copied ✓';btn.style.color='var(--green)';
-      setTimeout(function(){btn.textContent=o;btn.style.color='';},1400);
-    });
-  });
   // scroll reveal
   var io=new IntersectionObserver(function(es){
     es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
