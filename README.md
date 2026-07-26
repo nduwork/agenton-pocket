@@ -27,6 +27,12 @@ toggle on. (Local-only, no phone? Skip this and use `agenton up --lan`.)
 
 ### 2. Install agenton
 
+Homebrew (macOS / Linux):
+
+    brew install nduwork/tap/agenton
+
+Or run the installer, which fetches a prebuilt binary (no Homebrew needed):
+
     ./install.sh
 
 It asks where to put the binary, defaulting to `/usr/local/bin`:
