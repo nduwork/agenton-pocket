@@ -1,0 +1,27 @@
+# Go build output
+/agenton
+/agenton-smoke
+/dist/
+
+# macOS
+.DS_Store
+
+# Xcode / iOS
+# The .xcodeproj is generated from project.yml by xcodegen — never committed.
+ios/Agenton.xcodeproj/
+ios/build/
+ios/DerivedData/
+**/*.xcuserstate
+**/xcuserdata/
+.swiftpm/
+
+# Apple signing material — must never be committed
+*.p8
+*.p12
+*.mobileprovision
+*.cer
+
+# Local agent / editor tooling
+.claude/
+.superpowers/
+.gstack/

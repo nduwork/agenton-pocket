@@ -1,0 +1,26 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  # So a branch can be checked before it has a PR:
+  #   gh workflow run ci --ref <branch>
+  workflow_dispatch:
+
+# Tests only. Nothing is built in CI: binaries for this repo are built locally
+# with ./dev.sh (see AGENTS.md § Dev loop), and no artifacts are published from
+# here. The iOS app is not built here either — no macOS runner; its compile
+# check is ios/Tools/build-sim.sh, run locally (see AGENTS.md § Verification).
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: go vet ./...
+      - run: go test -race ./...
