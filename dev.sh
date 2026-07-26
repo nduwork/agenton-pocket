@@ -26,9 +26,9 @@
 # on localhost, so the sim has nothing to reach unless Tailscale is up.
 #
 # `ios` deliberately does NOT run xcodegen on its own. Regenerating rewrites the
-# tracked .pbxproj and pulls every file under ios/Agenton into the target —
-# including work-in-progress that may not compile. Pass --xcodegen when you mean
-# it (i.e. after editing project.yml).
+# generated .pbxproj (gitignored — never committed) and pulls every file under
+# ios/Agenton into the target — including work-in-progress that may not compile.
+# Pass --xcodegen when you mean it (i.e. after editing project.yml).
 set -euo pipefail
 cd "$(dirname "$0")"
 

@@ -49,7 +49,7 @@ Capabilities → pick **your** Team, and set your own bundle id. The bundle id i
 device build needs a real id under your team. Xcode resolves the SwiftTerm
 package on first open.
 
-## Flight test
+## Try it out
 
 1. On your Mac (or wherever the agent runs), start the daemon + web bridge:
    ```sh
