@@ -2,6 +2,11 @@
   <img src="assets/social-preview.png" alt="Agenton Pocket" width="720">
 </p>
 
+<p align="center">
+  <a href="https://github.com/nduwork/agenton-pocket/actions/workflows/ci.yml"><img src="https://github.com/nduwork/agenton-pocket/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPLv3-blue" alt="License: GPLv3"></a>
+</p>
+
 Run `claude` / `codex` / any CLI agent in daemon-owned sessions, and drive them
 from wherever you are: a minimal TUI at the desk, a tap-friendly web client on
 your phone. Sessions survive detach, replay scrollback on reattach, and can be
