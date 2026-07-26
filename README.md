@@ -27,15 +27,24 @@ toggle on. (Local-only, no phone? Skip this and use `agenton up --lan`.)
 
 ### 2. Install agenton
 
+No clone needed — pick whichever fits. One-liner (macOS / Linux), fetches a
+prebuilt binary:
+
+    curl -fsSL https://raw.githubusercontent.com/nduwork/agenton-pocket/main/install.sh | bash
+
 Homebrew (macOS / Linux):
 
     brew install nduwork/tap/agenton
+
+Go users:
+
+    go install github.com/nduwork/agenton-pocket/cmd/agenton@latest
 
 Linux `.deb` / `.rpm` packages are on the
 [releases page](https://github.com/nduwork/agenton-pocket/releases)
 (`sudo apt install ./agenton_*_amd64.deb`).
 
-Or run the installer, which fetches a prebuilt binary (no Homebrew needed):
+From a clone, the same installer runs interactively:
 
     ./install.sh
 

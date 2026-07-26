@@ -5,10 +5,10 @@
 #   ./install.sh                 # asks where to install (default /usr/local/bin)
 #   ./install.sh -d ~/bin        # or name the directory outright
 #   AGENTON_INSTALL_DIR=~/bin ./install.sh
-#   curl -fsSL https://raw.githubusercontent.com/nduwork/agenton/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/nduwork/agenton-pocket/main/install.sh | bash
 set -euo pipefail
 
-REPO_SLUG="nduwork/agenton"
+REPO_SLUG="nduwork/agenton-pocket"
 DEFAULT_DIR=/usr/local/bin
 
 say()  { printf '\033[1;36m==>\033[0m %s\n' "$*"; }
