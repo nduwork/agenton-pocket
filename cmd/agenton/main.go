@@ -23,8 +23,6 @@ func main() {
 	case "daemon":
 		refuseNested("daemon")
 		runDaemon(os.Args[2:])
-	case "client":
-		runClient(os.Args[2:])
 	case "tui":
 		runTUI(os.Args[2:])
 	case "web":
@@ -34,7 +32,7 @@ func main() {
 	case "version", "-version", "--version":
 		fmt.Println(version)
 	default:
-		fmt.Fprintf(os.Stderr, "unknown subcommand: %s\nusage: agenton [up|daemon|client|tui|web|qr|version] [args]\n", os.Args[1])
+		fmt.Fprintf(os.Stderr, "unknown subcommand: %s\nusage: agenton [up|daemon|tui|web|qr|version] [args]\n", os.Args[1])
 		os.Exit(2)
 	}
 }
