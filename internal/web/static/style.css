@@ -1,0 +1,129 @@
+/* agenton web — monospace, dark, thin rules, one accent. Matches the TUI. */
+:root {
+  --bg: #0f1115; --fg: #d8dee9; --dim: #6b7280;
+  --accent: #7aa2f7; --warn: #f7768e; --rule: #262b36;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+/* 100dvh = the visible viewport, excluding Safari's URL/toolbar chrome.
+   100% alone resolves to the larger layout viewport, so with body overflow:hidden
+   the bottom (text bar + terminal's last rows / agent status line) gets clipped
+   and is unreachable — the agent's bottom status line renders off-screen because
+   fit() sizes the PTY to the oversized #term. Fallback to 100% for old browsers. */
+html, body { height: 100%; height: 100dvh; background: var(--bg); color: var(--fg); overscroll-behavior: none; }
+body { display: flex; flex-direction: column; overflow: hidden; }
+
+main { flex: 1; display: flex; flex-direction: column; min-height: 0; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
+main[hidden] { display: none; }
+header { display: flex; align-items: center; gap: .5rem; padding: .6rem .8rem; border-bottom: 1px solid var(--rule); }
+header h1 { font-size: 1rem; font-weight: 600; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+button { background: none; border: 1px solid var(--rule); color: var(--fg); border-radius: .4rem; padding: .55rem .8rem; font-size: .9rem; }
+button:active { border-color: var(--accent); color: var(--accent); }
+button.warn:active { border-color: var(--warn); color: var(--warn); }
+input { background: none; border: 1px solid var(--rule); color: var(--fg); border-radius: .4rem; padding: .55rem .6rem; font-size: 16px; /* 16px stops iOS zoom-on-focus */ }
+input:focus { outline: none; border-color: var(--accent); }
+
+/* entry screen */
+#session-list { flex: 1; overflow-y: auto; list-style: none; }
+#session-list li { display: flex; align-items: center; gap: .6rem; padding: .8rem; border-bottom: 1px solid var(--rule); }
+#session-list .dot { width: .55rem; height: .55rem; border-radius: 50%; background: var(--dim); flex: none; }
+#session-list .dot.running { background: var(--accent); }
+#session-list .meta { flex: 1; min-width: 0; }
+#session-list .meta .name { font-weight: 600; }
+#session-list .meta .sub { color: var(--dim); font-size: .78rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#session-list .kill { border-color: transparent; color: var(--dim); }
+#new-form { display: grid; gap: .5rem; padding: .8rem; border-top: 1px solid var(--rule); }
+#new-form button { border-color: var(--accent); color: var(--accent); }
+#cmd-chips { display: flex; flex-wrap: wrap; gap: .35rem; }
+#cmd-chips:empty { display: none; }
+/* min-width:0 + a hard max-width so one long recalled command can't blow out
+   the flex row (a full command line with no spaces would otherwise force the
+   page wider than the viewport). */
+#cmd-chips button { border-color: var(--rule); color: var(--dim); padding: .35rem .55rem; font-size: .8rem; min-width: 0; max-width: 12rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#cmd-chips button.recent { color: var(--accent); border-color: var(--accent); }
+/* Overflowing chip labels slide end-to-end (paused at each end) instead of
+   ellipsizing — the tail of "ollama launch … --model X" is the payload.
+   --slide is set per-chip from the measured overflow in renderChips(). */
+#cmd-chips button span { display: inline-block; }
+#cmd-chips button.slide { text-overflow: clip; }
+#cmd-chips button.slide span { animation: chip-slide 7s linear infinite alternate; }
+@keyframes chip-slide {
+  0%, 20% { transform: translateX(0); }
+  80%, 100% { transform: translateX(var(--slide)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #cmd-chips button.slide span { animation: none; }
+}
+#cwd-row { display: flex; gap: .5rem; }
+#cwd-row input { flex: 1; }
+#btn-browse { border-color: var(--accent); color: var(--accent); flex: none; }
+
+/* session screen */
+#term { flex: 1; min-height: 0; padding: .3rem; }
+/* Scroll xterm's own viewport natively: iOS momentum + a real position
+   indicator, no JS. pan-y keeps the drag on the viewport (not panning the
+   page); overscroll-behavior contain stops the bounce from reaching the pad
+   and text bar below. A slim always-present thumb shows scrollback position. */
+.xterm-viewport { touch-action: pan-y; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; background-color: transparent !important; }
+/* xterm paints .xterm-screen on top of the scrollable .xterm-viewport, so a
+   finger drag lands on the screen (not a scroll container) and never reaches
+   the viewport underneath — touch scroll silently dies on real phones (desktop
+   still works via xterm's wheel handler). This terminal is output-only
+   (disableStdin), so the screen needs no pointer events: let them fall through
+   to the viewport and scroll it natively. */
+.xterm-screen { pointer-events: none; }
+.xterm-viewport::-webkit-scrollbar { width: 8px; }
+.xterm-viewport::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 4px; }
+.xterm-viewport::-webkit-scrollbar-thumb:active { background: var(--accent); }
+#pad { display: grid; grid-template-columns: repeat(4, 1fr); gap: .45rem; padding: .6rem .8rem 0; border-top: 1px solid var(--rule); }
+#pad button { padding: .7rem .2rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: background-color .22s ease, border-color .22s ease, color .22s ease; }
+/* A tap is too brief for :active to register on touch — JS adds .tapped for a
+   moment and the transition fades the highlight back out, so every press is
+   visibly acknowledged. */
+#pad button.tapped { background: rgba(122,162,247,.28); border-color: var(--accent); color: var(--accent); }
+#pad button.warn.tapped { background: rgba(247,118,142,.28); border-color: var(--warn); color: var(--warn); }
+/* hold-to-edit affordance on the two rebindable keys */
+#pad button.editable::after { content: " ✎"; color: var(--dim); font-size: .75em; }
+#textbar { display: flex; gap: .45rem; padding: .6rem .8rem; }
+#textbar input { flex: 1; }
+#textbar button { border-color: var(--accent); color: var(--accent); }
+#btn-font { color: var(--dim); }
+#btn-font.compact { color: var(--accent); border-color: var(--accent); }
+#btn-mode { color: var(--accent); border-color: var(--accent); }
+
+/* Controller mode: no terminal — the pad grows into a full-screen remote for
+   the session another client (desk TUI / iOS) is rendering. */
+#screen-session.controller #term { display: none; }
+#screen-session.controller #pad { flex: 1; grid-auto-rows: 1fr; border-top: none; align-content: stretch; }
+#screen-session.controller #pad button { font-size: 1.05rem; white-space: normal; overflow-wrap: anywhere; }
+
+/* rebind dialog */
+dialog { background: var(--bg); color: var(--fg); border: 1px solid var(--rule); border-radius: .6rem; padding: 1rem; width: min(92vw, 22rem); margin: auto; }
+dialog::backdrop { background: rgba(0,0,0,.6); }
+dialog h2 { font-size: .95rem; margin-bottom: .8rem; }
+dialog label { display: grid; gap: .4rem; font-size: .85rem; color: var(--dim); }
+dialog p { margin: .8rem 0 .4rem; font-size: .85rem; color: var(--dim); }
+#rebind-preview { color: var(--accent); }
+.dialog-buttons { display: flex; justify-content: flex-end; gap: .5rem; margin-top: 1rem; }
+#rebind-save, #dir-use { border-color: var(--accent); color: var(--accent); }
+
+/* chord builder: modifier toggles + quick base keys */
+#rebind-mods, #rebind-keys { display: flex; flex-wrap: wrap; gap: .35rem; }
+#rebind-mods button, #rebind-keys button { padding: .4rem .7rem; font-size: .82rem; }
+#rebind-mods button.selected { border-color: var(--accent); color: var(--accent); background: rgba(122,162,247,.15); }
+#rebind-text { width: 100%; }
+
+/* directory picker */
+#dirpicker { width: min(92vw, 26rem); }
+#dir-bar { display: flex; align-items: center; gap: .5rem; margin-bottom: .6rem; }
+#dir-bar button { flex: none; padding: .45rem .6rem; }
+#dir-bar code { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg); font-size: .8rem; }
+#dir-list { max-height: 50vh; overflow-y: auto; display: flex; flex-direction: column; gap: .3rem; }
+.dir-item { text-align: left; border-color: var(--rule); }
+.dir-empty { color: var(--dim); font-size: .85rem; padding: .8rem 0; text-align: center; }
+
+/* banner + toast */
+#banner { display: flex; align-items: center; gap: .8rem; padding: .5rem .8rem; background: var(--warn); color: #14060a; }
+#banner[hidden] { display: none; }
+#toast { position: fixed; bottom: 4.5rem; left: 50%; transform: translateX(-50%); background: var(--rule); padding: .5rem .9rem; border-radius: .4rem; font-size: .85rem; max-width: 90vw; }
+#toast[hidden] { display: none; }

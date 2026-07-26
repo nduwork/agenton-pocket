@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>agenton</title>
+<link rel="stylesheet" href="vendor/xterm.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="banner" hidden>
+  <span>disconnected</span>
+  <button id="banner-reconnect">Reconnect</button>
+</div>
+
+<main id="screen-entry">
+  <header><h1>agenton</h1><button id="refresh">↻</button></header>
+  <ul id="session-list"></ul>
+  <form id="new-form">
+    <div id="cmd-chips"></div>
+    <input id="new-command" placeholder="command (empty = shell; e.g. claude, ollama launch …)" autocomplete="off" autocapitalize="off">
+    <div id="cwd-row">
+      <input id="new-cwd" placeholder="cwd (optional, e.g. ~/repos/api)" autocomplete="off" autocapitalize="off">
+      <button id="btn-browse" type="button" title="browse folders">📁</button>
+    </div>
+    <button id="new-go" type="submit">New shell</button>
+  </form>
+</main>
+
+<main id="screen-session" hidden>
+  <header>
+    <button id="btn-back">‹ back</button>
+    <h1 id="session-title"></h1>
+    <button id="btn-font" title="shrink terminal font to fit more columns">Aa</button>
+    <button id="btn-mode" title="switch between Terminal and Controller">Pad</button>
+  </header>
+  <div id="term"></div>
+  <!-- keyboard-style layout: arrows form an inverted-T (Up over Down, Left/Right
+       flanking), customs flank Up — same spatial map as the iOS pad. -->
+  <div id="pad">
+    <button data-action="accept">⏎ Enter</button>
+    <button data-action="mode_switch">Mode</button>
+    <button data-action="interrupt" class="warn">■ Esc</button>
+    <button data-action="exit" class="warn">Exit(Ctrl+C)</button>
+    <button data-action="new_chat">New</button>
+    <button data-action="custom_1" id="btn-custom1" class="editable" title="hold to rebind">Custom 1</button>
+    <button data-action="up">▲ Up</button>
+    <button data-action="custom_2" id="btn-custom2" class="editable" title="hold to rebind">Custom 2</button>
+    <button data-action="rewind">Rewind</button>
+    <button data-action="left">◀ Left</button>
+    <button data-action="down">▼ Down</button>
+    <button data-action="right">▶ Right</button>
+  </div>
+  <div id="textbar">
+    <input id="text-input" placeholder="type a message…" autocomplete="off" autocapitalize="off">
+    <button id="text-send">➤</button>
+  </div>
+</main>
+
+<dialog id="rebind">
+  <h2 id="rebind-title"></h2>
+  <p>Modifiers</p>
+  <div id="rebind-mods">
+    <button type="button" data-mod="Ctrl">Ctrl</button>
+    <button type="button" data-mod="Alt">Alt / ⌥</button>
+    <button type="button" data-mod="Shift">Shift</button>
+  </div>
+  <p>Key or text</p>
+  <input id="rebind-text" placeholder="base key or text (e.g. Space, k, /compact)" autocomplete="off" autocapitalize="off">
+  <div id="rebind-keys"></div>
+  <p>will send: <code id="rebind-preview">—</code></p>
+  <p id="rebind-warn" style="color:var(--warn)" hidden>⌘/Super can’t be sent to a terminal — use Ctrl, Alt/Option, or Shift.</p>
+  <div class="dialog-buttons">
+    <button id="rebind-cancel">Cancel</button>
+    <button id="rebind-save">Save</button>
+  </div>
+</dialog>
+
+<dialog id="dirpicker">
+  <div id="dir-bar">
+    <button id="dir-up" type="button" title="parent">↑</button>
+    <button id="dir-home" type="button" title="home">🏠</button>
+    <code id="dir-path">…</code>
+  </div>
+  <div id="dir-list"></div>
+  <div class="dialog-buttons">
+    <button id="dir-cancel">Cancel</button>
+    <button id="dir-use">Use this folder</button>
+  </div>
+</dialog>
+
+<div id="toast" hidden></div>
+
+<script src="vendor/xterm.js"></script>
+<script src="vendor/addon-fit.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>
