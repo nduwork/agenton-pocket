@@ -28,6 +28,9 @@ struct ServerSettings: View {
                     }
                 }
                 Section {
+                    Button { AppLinks.open(.daemonInstall) } label: {
+                        Label("Install the daemon", systemImage: "arrow.down.circle")
+                    }
                     Button {
                         scanning = true
                     } label: {
@@ -36,7 +39,7 @@ struct ServerSettings: View {
                     Button("Test connection", action: test)
                     if !probe.isEmpty { Text(probe).font(.footnote).foregroundStyle(Theme.dim) }
                 } footer: {
-                    Text("Run `agenton up` (or `agenton qr`) on the host — it prints a QR to scan, or reach it over your tailnet by hand.")
+                    Text("Don't have it yet? Install the daemon, then run `agenton up` (or `agenton qr`) on the host — it prints a QR to scan, or reach it over your tailnet by hand.")
                 }
             }
             .navigationTitle("Server")
