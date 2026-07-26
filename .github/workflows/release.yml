@@ -1,7 +1,7 @@
 name: release
 
-# Builds the prebuilt agenton binaries (and the Homebrew formula) and attaches
-# them to the GitHub Release for a tag. It does NOT trigger on `push: tags`,
+# Builds the prebuilt agenton binaries and attaches them to the GitHub Release
+# for a tag. It does NOT trigger on `push: tags`,
 # because release-please creates tags with the GITHUB_TOKEN and GitHub does not
 # fire workflows for token-pushed tags. Instead it is invoked two ways:
 #   • automatically  — release-please.yml calls it (workflow_call) right after
@@ -41,6 +41,3 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # PAT with write access to the homebrew-tap repo. If unset, the brew
-          # step is skipped (see .goreleaser.yaml) so releases still succeed.
-          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}

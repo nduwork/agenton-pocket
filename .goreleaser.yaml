@@ -40,22 +40,3 @@ nfpms:
     description: "Local agent daemon (TUI + web), reachable from your phone over Tailscale"
     license: "GPL-3.0-only"
     bindir: /usr/bin
-
-# Homebrew: publishes a cask to the nduwork/homebrew-tap repo so users can
-#   brew install nduwork/tap/agenton
-# A cask (not a formula) is the current goreleaser way to ship a prebuilt
-# binary, and it strips macOS's Gatekeeper quarantine flag so the unsigned
-# binary runs. Requires a HOMEBREW_TAP_TOKEN secret (a PAT with write access to
-# the tap repo); the default GITHUB_TOKEN can't push to another repo. When the
-# token is absent the step is skipped, so a release without it still succeeds.
-homebrew_casks:
-  - name: agenton
-    skip_upload: '{{ if eq (index .Env "HOMEBREW_TAP_TOKEN") "" }}true{{ else }}false{{ end }}'
-    repository:
-      owner: nduwork
-      name: homebrew-tap
-      branch: main
-      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
-    directory: Casks
-    homepage: "https://github.com/nduwork/agenton-pocket"
-    description: "Local agent daemon (TUI + web), reachable from your phone over Tailscale"
