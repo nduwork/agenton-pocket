@@ -60,8 +60,8 @@ lists the sessions it will kill first.
 
 ## Conventions
 
-- Plain git/gh for PRs (no Graphite). Conventional Commit messages —
-  release-please builds the changelog and version bumps from them.
+- Use Conventional Commit messages — release-please builds the changelog and
+  version bumps from them.
 - Contributions are accepted under the CLA in `.github/CONTRIBUTING.md`. The
   daemon + web source is GPL-3.0; anyone can build and run the app in the iOS
   Simulator with no Apple account. App Store / signed builds are the copyright
