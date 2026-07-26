@@ -223,7 +223,7 @@ The daemon + web source is free software under GPL-3.0. The iOS App Store
 binary is a separate **proprietary** build shipped by the copyright holder — a
 paid convenience, not GPL-licensed. This dual arrangement works because all
 copyright is held by one author; outside contributions are accepted under a
-[CLA](CONTRIBUTING.md) so that right is preserved. The repo is hosted in the
+[CLA](.github/CONTRIBUTING.md) so that right is preserved. The repo is hosted in the
 `nduwork` workspace, but copyright is held by Niu Du personally.
 
 Third-party licenses (bundled Go modules, including the Tailscale client under
