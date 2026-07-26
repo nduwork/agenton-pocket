@@ -15,11 +15,7 @@ targets:
     type: application
     platform: iOS
     sources:
-      # The StoreKit test config is referenced by the scheme (below), not shipped
-      # in the app bundle — exclude it from the compiled/resource sources.
       - path: Agenton
-        excludes:
-          - "**/*.storekit"
     dependencies:
       - package: SwiftTerm
     info:
@@ -87,6 +83,9 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.example.agentonpocket.tests
         SWIFT_VERSION: "5.0"
+        # Unit-test bundle needs an Info.plist to code-sign on the Simulator;
+        # let Xcode synthesize one (no file to maintain).
+        GENERATE_INFOPLIST_FILE: "YES"
 
 schemes:
   Agenton:
@@ -95,10 +94,6 @@ schemes:
         Agenton: all
     run:
       config: Debug
-      # Local StoreKit testing: drives Product.products / purchase in the
-      # Simulator from Agenton.storekit, so the tip flow works with no App Store
-      # Connect setup. Only affects Debug/Run; Release/App Store use the real store.
-      storeKitConfiguration: Agenton/Agenton.storekit
     test:
       config: Debug
       targets:

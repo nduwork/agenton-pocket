@@ -35,11 +35,15 @@ struct EntryView: View {
             // indicator), so it reads as a quiet footer instead of floating in
             // the scroll content.
             .safeAreaInset(edge: .bottom) {
-                if AppConfig.storeKitEnabled && showSupport {
+                // Tip jar is a private-only feature (ios/Agenton/Tips/); compiled
+                // out of the open-source agenton-pocket build.
+                #if TIPS
+                if showSupport {
                     SupportCard(client: client) { showSupport = false }
                         .padding(.horizontal).padding(.top, 8)
                         .background(Theme.bg)
                 }
+                #endif
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -235,9 +239,11 @@ struct EntryView: View {
     // Show the tip card at most once per snooze window; showing it schedules the
     // next appearance. Once visible it stays for the session until dismissed.
     private func refreshSupport() {
-        guard AppConfig.storeKitEnabled, settings.supportDue else { return }
+        #if TIPS
+        guard settings.supportDue else { return }
         settings.snoozeSupport()
         showSupport = true
+        #endif
     }
 
     private func reconnect() {
