@@ -6,8 +6,8 @@ custom keys — but with iOS-native wins:
 
 - **SwiftTerm** renders the terminal (a `UIScrollView`), so scrollback panning
   and momentum are native instead of an xterm.js viewport in a web view.
-- **Button pad** uses SF Symbols, colour-codes Accept (green) / Stop (red),
-  and fires a haptic on every press. Hold a custom key to rebind it.
+- **Button pad** uses SF Symbols, tints the primary keys — Enter (green) /
+  Esc (red) — and fires a haptic on every press. Hold a custom key to rebind it.
 - Connects with the built-in `URLSessionWebSocketTask` — no third-party deps
   beyond SwiftTerm.
 
@@ -75,8 +75,10 @@ swiftc Agenton/Models/Frame.swift Agenton/Models/Protocol.swift \
        Tools/selfcheck.swift -o /tmp/selfcheck && /tmp/selfcheck
 ```
 
-## Not yet (v0.1)
+## Limitations
 
 - Quoted args in the new-session command (whitespace split only, same as web v1.1).
-- ATS allows arbitrary loads for the prototype; narrow to the daemon host + wss
-  before any App Store build (see `project.yml`).
+- The daemon bridge is plain `ws://` with no TLS option — the tailnet is the
+  security boundary, so App Transport Security is opened for cleartext (arbitrary
+  loads + a targeted `ts.net` exception in `project.yml`). This is by design, not
+  a prototype shortcut.
