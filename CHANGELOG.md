@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/nduwork/agenton-pocket/compare/v0.1.1...v0.2.0) (2026-07-26)
+
+
+### Features
+
+* **site:** consolidate landing page — new visual design + inline install quick-start ([1d0f5d1](https://github.com/nduwork/agenton-pocket/commit/1d0f5d1e450e9084d2a7bcdc02443621cee32785))
+
 ## [0.1.1](https://github.com/nduwork/agenton-pocket/compare/v0.1.0...v0.1.1) (2026-07-26)
 
 
