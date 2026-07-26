@@ -24,8 +24,7 @@ targets:
         CFBundleDisplayName: Agenton Pocket
         # Let the build settings (MARKETING_VERSION / CURRENT_PROJECT_VERSION
         # below) drive the version, instead of literal values here that would
-        # override them. Bump the build number in CURRENT_PROJECT_VERSION for
-        # every TestFlight upload.
+        # override them. Bump CURRENT_PROJECT_VERSION for each new build.
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         # App uses only standard/exempt networking (plain ws:// over Tailscale,
