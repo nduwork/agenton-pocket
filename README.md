@@ -224,11 +224,17 @@ is covered under [Phone access](#phone-access-tailscale).
 
 Copyright © 2026 Niu Du. Licensed under GPL-3.0 — see [LICENSE](LICENSE).
 
-The daemon + web source is free software under GPL-3.0. The iOS App Store
-binary is a separate **proprietary** build shipped by the copyright holder — a
-paid convenience, not GPL-licensed. This dual arrangement works because all
-copyright is held by one author; outside contributions are accepted under a
-[CLA](.github/CONTRIBUTING.md) so that right is preserved. The repo is hosted in the
+All source in this repo — daemon, web, **and** the iOS app (`ios/`) — is free
+software under GPL-3.0; build and run it yourself (the iOS app runs in the
+Simulator with no Apple account). The only thing that isn't the GPL code is the
+**signed App Store binary**: a paid convenience published from the maintainer's
+private signing pipeline. This dual arrangement works because all copyright is
+held by one author; outside contributions are accepted under a
+[CLA](.github/CONTRIBUTING.md) so that right is preserved.
+
+Changes are proposed by **fork and pull request** — fork the repo, push to your
+fork, and open a PR. Direct push access isn't granted; see
+[CONTRIBUTING](.github/CONTRIBUTING.md). The repo is hosted in the
 `nduwork` workspace, but copyright is held by Niu Du personally.
 
 Third-party licenses (bundled Go modules, including the Tailscale client under

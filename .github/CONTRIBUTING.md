@@ -2,6 +2,13 @@
 
 Thanks for your interest. A quick note on licensing before you send a PR.
 
+## How to propose a change
+
+Changes are proposed by **fork and pull request**. Fork the repo, push your
+work to a branch on your fork, and open a PR against `main`. Direct push access
+to this repo isn't granted — everyone contributes through their own fork, and
+the maintainer reviews and merges.
+
 ## Contributor License grant
 
 agenton is GPL-3.0, but the copyright holder (Niu Du) also ships a proprietary
