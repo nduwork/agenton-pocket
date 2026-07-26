@@ -5,7 +5,9 @@ name: release-please
 # merge that PR — merging it tags vX.Y.Z and publishes a GitHub Release. This is
 # the "maintainer decides when to release" gate.
 #
-# Uses only the automatic GITHUB_TOKEN; no secrets.
+# The org locks "Allow Actions to create PRs", so the default GITHUB_TOKEN can't
+# open the Release PR. This uses a fine-grained PAT (RELEASE_PLEASE_TOKEN) scoped
+# to this repo with Contents: RW + Pull requests: RW.
 on:
   push:
     branches: [main]
@@ -20,5 +22,6 @@ jobs:
     steps:
       - uses: googleapis/release-please-action@v4
         with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
           config-file: .github/release-please-config.json
           manifest-file: .github/.release-please-manifest.json
