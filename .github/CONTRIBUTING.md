@@ -60,6 +60,8 @@ access to the beta test group by emailing <ndu@nduwork.com>.
   `test:`, `refactor:`) so release-please does not bump the version or rebuild
   the artifact.
 - Keep changes focused and include a test where it makes sense.
-- Go: `go test -race ./...` must pass (CI runs `go vet` + race tests).
+- Go: `go test -race ./...` must pass (CI runs `go vet` + race tests). CI skips
+  the Go steps for docs-only changes (`docs/`, `assets/`, `*.md`, `LICENSE`) —
+  the `test` check still reports green so it never blocks a docs PR.
 - iOS: `ios/Tools/build-sim.sh` must still compile (CI has no macOS runner, so
   run this locally after Swift changes).
