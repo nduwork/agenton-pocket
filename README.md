@@ -1,4 +1,8 @@
-# Agenton Pocket
+<p align="center">
+  <img src="assets/logo.png" alt="Agenton Pocket logo" width="140" height="140">
+</p>
+
+<h1 align="center">Agenton Pocket</h1>
 
 Run `claude` / `codex` / any CLI agent in daemon-owned sessions, and drive them
 from wherever you are: a minimal TUI at the desk, a tap-friendly web client on
@@ -7,6 +11,23 @@ watched from both clients at once. The daemon + wire protocol are designed to
 be reused unchanged by a future native iOS client.
 
 ## Quickstart
+
+### 1. Set up Tailscale first
+
+agenton reaches your phone over [Tailscale](https://tailscale.com), so configure
+that **before** running agenton — the default `agenton` publishes over your
+tailnet and has nothing to bind to without it ([why](#why-tailscale)). One-time,
+on both devices:
+
+1. **Computer** — install Tailscale (`brew install tailscale`, or the
+   [download](https://tailscale.com/download)), open the app, and log in.
+2. **Phone** — install Tailscale from the App Store / Play Store, log in with
+   the **same account**, and flip the VPN toggle **on**.
+
+Both devices are now on one private network; day to day you just leave the
+toggle on. (Local-only, no phone? Skip this and use `agenton up --lan`.)
+
+### 2. Install agenton
 
     ./install.sh
 
@@ -21,15 +42,16 @@ directory up front:
 
     ./install.sh -d ~/.local/bin        # or AGENTON_INSTALL_DIR=~/.local/bin
 
-After that, from anywhere:
+### 3. Run it
+
+From anywhere (with the Tailscale app running from step 1):
 
     agenton
 
 That starts everything: the daemon (if not running), the web server (if not
-running), and drops you into the TUI. With the **Tailscale app** running on the
-computer, it publishes the phone bridge over your tailnet and prints a QR — no
-extra config, nothing to approve, works on the free Tailscale plan. Quitting the
-TUI leaves the daemon, web server, and all sessions running — `agenton` again to
+running), and drops you into the TUI. It publishes the phone bridge over your
+tailnet and prints a QR — no extra config, nothing to approve. Quitting the TUI
+leaves the daemon, web server, and all sessions running — `agenton` again to
 come back.
 Logs land in `~/.local/state/agenton/`.
 
@@ -40,34 +62,37 @@ as `./agenton`.
 
 ## Phone access (Tailscale)
 
-Step-by-step tutorial (including phone-side setup and the web client's
-Terminal/Controller modes): [docs/phone-setup.md](docs/phone-setup.md).
+### Why Tailscale
 
-agenton serves the phone bridge over your tailnet through the **system Tailscale
-app** on the computer. It registers no tailnet node of its own — nothing to
-approve, no login link, works on the free plan. One command:
+agenton speaks plain HTTP and exposes nothing to the internet. Instead it rides
+your **tailnet** — a private [Tailscale](https://tailscale.com) mesh VPN
+(WireGuard) that puts your computer and phone on the same encrypted network no
+matter where either one physically is. On the couch, on cellular, or across the
+country, the phone reaches your daemon exactly as if both were on your home
+Wi-Fi. The tailnet *is* the security boundary: only devices logged into *your*
+account can reach the port, and the wire is encrypted for you.
 
-    agenton up -no-tui      # binds the Mac's tailnet IP and prints a connect QR
+agenton uses the **system Tailscale app** already on the computer — it registers
+no tailnet node of its own, so there's nothing to approve, no login link, and it
+works on the **free** plan. Install it once on both devices ([Quickstart step
+1](#1-set-up-tailscale-first)).
 
-On the phone, open the agenton iOS app, tap ⚙︎ → **Scan QR**, and scan the
-block it printed. Reprint any time with `agenton qr`.
+### Connect (every day)
+
+    agenton up -no-tui      # binds the computer's tailnet IP and prints a connect QR
+
+On the phone, open the agenton iOS app, tap ⚙︎ → **Scan QR**, and scan the block
+it printed. Reprint any time with `agenton qr`.
 
 **No app?** The server also hosts a web client. Open the printed `http://…`
 URL in any browser on your tailnet, or run `agenton qr --web` for a QR of that
 URL you can scan with the phone's plain **Camera** (it opens straight in the
-browser — no scheme, no app).
-
-One time on **both** machines: install the Tailscale app (App Store / Play
-Store), log in with the **same account**, and switch it on — that's how each
-device gets onto the tailnet.
+browser — no scheme, no app). To make it feel like an app, use the browser's
+Share → **Add to Home Screen** for a full-screen launcher icon.
 
 Modes:
 - `agenton up` (default) — over the tailnet via the system Tailscale app.
 - `agenton up --lan` — localhost only, no tailnet publish.
-
-agenton speaks plain HTTP and terminates no TLS. Your tailnet is the security
-boundary: only devices logged into *your* tailnet can reach the port, and
-nothing is exposed to the internet. Tailscale already encrypts the wire.
 
 ## Using the TUI
 
@@ -146,7 +171,6 @@ Presets pin an agent + cwd + custom buttons under a name:
     agenton tui             # just the TUI (daemon must be running)
     agenton web             # just the web server (default 127.0.0.1:9787)
     agenton daemon          # just the daemon (socket at ~/.agenton/agenton.sock)
-    agenton client          # stdio bridge (remote transport, future SSH/Tailscale)
     agenton qr              # publish over Tailscale + print the iOS connect QR
 
 ## Test
@@ -163,8 +187,7 @@ needs a rebuild + restart, not just a browser reload.
 
 ```
 TUI (Bubble Tea) ────Unix socket────┐
-phone browser ⇄ WS ⇄ agenton web ───┤──> daemon (owns PTYs) ──> claude / codex / …
-SSH exec `agenton client` (stdio) ──┘
+phone browser ⇄ WS ⇄ agenton web ───┴──> daemon (owns PTYs) ──> claude / codex / …
 ```
 
 Wire frame: `[1 type][4 session_id][4 len][payload]`; `0x01`=control JSON,
@@ -176,9 +199,8 @@ reattach replays scrollback then streams live output.
 
 ## Design docs
 
-The architecture is summarized above (protocol, daemon, transport). For the
-end-to-end walkthrough of connecting a phone to your daemon, see the
-[phone setup tutorial](docs/phone-setup.md).
+The architecture is summarized above (protocol, daemon, transport); phone setup
+is covered under [Phone access](#phone-access-tailscale).
 
 ## License
 
