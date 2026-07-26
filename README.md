@@ -32,10 +32,6 @@ prebuilt binary:
 
     curl -fsSL https://raw.githubusercontent.com/nduwork/agenton-pocket/main/install.sh | bash
 
-Homebrew (macOS / Linux):
-
-    brew install nduwork/tap/agenton
-
 Go users:
 
     go install github.com/nduwork/agenton-pocket/cmd/agenton@latest

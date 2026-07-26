@@ -2,8 +2,8 @@
 
 Releases are automated. A daemon `feat:`/`fix:`/`perf:` commit on `main` makes
 release-please open a Release PR; merging it tags `vX.Y.Z`, and the `release`
-workflow builds the binaries, `.deb`/`.rpm`, and the Homebrew cask via
-goreleaser. Nothing here needs to be run by hand.
+workflow builds the binaries and `.deb`/`.rpm` via goreleaser. Nothing here
+needs to be run by hand.
 
 ## macOS signing & notarization
 
