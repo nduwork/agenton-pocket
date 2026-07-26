@@ -1,0 +1,65 @@
+{
+  "identifier" : "AAAA0000-0000-0000-0000-0000000000FF",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "2.99",
+      "familyShareable" : false,
+      "internalID" : "AAAA0000-0000-0000-0000-000000000001",
+      "localizations" : [
+        {
+          "description" : "A small thank-you that keeps agenton free.",
+          "displayName" : "Small tip",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.example.agentonpocket.tip.small",
+      "referenceName" : "Small tip",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "5.99",
+      "familyShareable" : false,
+      "internalID" : "AAAA0000-0000-0000-0000-000000000002",
+      "localizations" : [
+        {
+          "description" : "A generous thank-you that keeps agenton free.",
+          "displayName" : "Medium tip",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.example.agentonpocket.tip.medium",
+      "referenceName" : "Medium tip",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "9.99",
+      "familyShareable" : false,
+      "internalID" : "AAAA0000-0000-0000-0000-000000000003",
+      "localizations" : [
+        {
+          "description" : "A big thank-you that keeps agenton free.",
+          "displayName" : "Large tip",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.example.agentonpocket.tip.large",
+      "referenceName" : "Large tip",
+      "type" : "Consumable"
+    }
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_storefront" : "USA"
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}
