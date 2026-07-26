@@ -2,7 +2,7 @@ package transport
 
 import "io"
 
-// Conn is a framed, duplex connection. Both *net.UnixConn and StdioConn satisfy it.
+// Conn is a framed, duplex connection, satisfied by *net.UnixConn.
 type Conn interface {
 	io.ReadWriteCloser
 }
