@@ -1,8 +1,6 @@
 <p align="center">
-  <img src="assets/logo.png" alt="Agenton Pocket logo" width="140" height="140">
+  <img src="assets/social-preview.png" alt="Agenton Pocket" width="720">
 </p>
-
-<h1 align="center">Agenton Pocket</h1>
 
 Run `claude` / `codex` / any CLI agent in daemon-owned sessions, and drive them
 from wherever you are: a minimal TUI at the desk, a tap-friendly web client on
