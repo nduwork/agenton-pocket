@@ -41,6 +41,13 @@ to the **iOS Simulator** with no Apple account or signing material — see
   [Conventional Commits](https://www.conventionalcommits.org) (`feat:`, `fix:`,
   `docs:`, …). The release bot ([release-please](https://github.com/googleapis/release-please))
   reads them to compute the next version and update the changelog.
+- **Releases are daemon-only, and the commit type is the switch.** A release
+  (new version tag + prebuilt binaries) is cut *only* by a daemon behavior
+  change: `feat:`, `fix:`, `perf:`, or a breaking `!`. Anything that does not
+  change the daemon — docs, README, `install.sh`, CI, tests, refactors, or the
+  `ios/` mirror — must use a non-releasing type (`docs:`, `chore:`, `ci:`,
+  `test:`, `refactor:`) so release-please does not bump the version or rebuild
+  the artifact.
 - Keep changes focused and include a test where it makes sense.
 - Go: `go test -race ./...` must pass (CI runs `go vet` + race tests).
 - iOS: `ios/Tools/build-sim.sh` must still compile (CI has no macOS runner, so

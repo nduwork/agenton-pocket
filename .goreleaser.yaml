@@ -1,0 +1,28 @@
+# goreleaser builds the prebuilt agenton binaries that install.sh fetches.
+# It runs from release.yml on the vX.Y.Z tag release-please creates, and the
+# archive names here MUST match what install.sh downloads:
+#   agenton_<version>_<os>_<arch>.tar.gz   (version has no leading v)
+# Daemon only — the iOS app lives in its own repo and never releases from here.
+version: 2
+
+project_name: agenton
+
+builds:
+  - id: agenton
+    main: ./cmd/agenton
+    binary: agenton
+    env:
+      - CGO_ENABLED=0        # pure Go: lets one Linux runner cross-build darwin
+    goos: [linux, darwin]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w -X main.version={{ .Version }}   # stamps main.version (see cmd/agenton/main.go)
+
+archives:
+  - id: agenton
+    formats: [tar.gz]
+    # {{.Version}} is the tag without its leading v — matches install.sh.
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: checksums.txt
