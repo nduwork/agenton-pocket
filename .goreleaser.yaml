@@ -27,6 +27,20 @@ archives:
 checksum:
   name_template: checksums.txt
 
+# Linux packages: .deb (apt/dpkg) and .rpm (dnf/yum). agenton is a per-user
+# agent, not a root system daemon, so there's no systemd unit — the package just
+# installs the binary to /usr/bin. Install a downloaded file with, e.g.,
+#   sudo apt install ./agenton_<ver>_linux_amd64.deb
+nfpms:
+  - id: agenton
+    package_name: agenton
+    formats: [deb, rpm]
+    maintainer: "nduwork <nduwork@users.noreply.github.com>"
+    homepage: "https://github.com/nduwork/agenton-pocket"
+    description: "Local agent daemon (TUI + web), reachable from your phone over Tailscale"
+    license: "GPL-3.0-only"
+    bindir: /usr/bin
+
 # Homebrew: publishes a cask to the nduwork/homebrew-tap repo so users can
 #   brew install nduwork/tap/agenton
 # A cask (not a formula) is the current goreleaser way to ship a prebuilt
