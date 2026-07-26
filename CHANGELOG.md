@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.1](https://github.com/nduwork/agenton-pocket/compare/v0.1.0...v0.1.1) (2026-07-26)
+
+
+### Bug Fixes
+
+* **install:** target public agenton-pocket, not private agenton ([b743c78](https://github.com/nduwork/agenton-pocket/commit/b743c78424a28c84077122c6e240e7ce8ae00035))
+* **install:** target the public agenton-pocket repo, not private agenton ([0179ac0](https://github.com/nduwork/agenton-pocket/commit/0179ac06110a5495a2bb02845aec84d71b639183))
+
 ## 0.1.0 (2026-07-26)
 
 
