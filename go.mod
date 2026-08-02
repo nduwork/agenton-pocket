@@ -11,7 +11,7 @@ require (
 	github.com/coder/websocket v1.8.15
 	github.com/creack/pty v1.1.24
 	github.com/mdp/qrterminal/v3 v3.2.1
-	github.com/taigrr/bubbleterm v0.3.3
+	github.com/taigrr/bubbleterm v0.3.4
 	golang.org/x/sys v0.47.0
 	tailscale.com v1.100.0
 )
