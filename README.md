@@ -74,9 +74,9 @@ config, nothing to approve. (On the same Wi-Fi and don't want Tailscale? Use
 
 You pick the reach — `vpn` or `lan` — once, when starting. After that, bare
 `agenton` resumes the session (reopens the TUI); quitting the TUI leaves the
-daemon, web server, and all sessions running. `agenton stop` ends everything. A
-start flag is refused while agenton is already up, so the reach never changes
-mid-run.
+daemon, web server, and all sessions running. `agenton stop` ends everything.
+Starting again is refused while agenton is already up, so the reach never
+changes mid-run.
 Logs land in `~/.local/state/agenton/`.
 
 Headless (a server that only needs daemon + web): `agenton vpn -no-tui`.
@@ -120,8 +120,8 @@ Modes (pick one when starting):
   phones/browsers on the same Wi-Fi can reach it. No tailnet.
 
 Once running, bare `agenton` resumes the session and `agenton stop` ends
-everything (daemon, web, all sessions). A start flag is refused while agenton is
-already up, so the reach never changes mid-run.
+everything (daemon, web, all sessions). Starting again is refused while agenton
+is already up, so the reach never changes mid-run.
 
 ## Using the TUI
 
@@ -202,10 +202,10 @@ Presets pin an agent + cwd + custom buttons under a name:
 
 ## Commands
 
-    agenton vpn           # start over your tailnet (Tailscale), then open the TUI
-    agenton lan           # start over your local network (LAN IP), then open the TUI
+    agenton vpn             # start over your tailnet (Tailscale), then open the TUI
+    agenton lan             # start over your local network (LAN IP), then open the TUI
     agenton                 # resume the running session (open the TUI)
-    agenton vpn -no-tui   # start daemon + web only (headless/server)
+    agenton vpn -no-tui     # start daemon + web only (headless/server)
     agenton tui             # just the TUI (daemon must be running)
     agenton web             # just the web server (default 127.0.0.1:9787)
     agenton daemon          # just the daemon (socket at ~/.agenton/agenton.sock)

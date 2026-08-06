@@ -32,7 +32,7 @@ func runQR(args []string) {
 	info, ok := readTailnetInfo()
 	if !ok {
 		fmt.Fprintln(os.Stderr, "agenton: no tailnet endpoint yet.")
-		fmt.Fprintln(os.Stderr, "         start the server first (`agenton up` or `agenton up -no-tui`)")
+		fmt.Fprintln(os.Stderr, "         start the server first (`agenton vpn` or `agenton vpn -no-tui`)")
 		fmt.Fprintln(os.Stderr, "         with the Tailscale app running, then re-run `agenton qr`.")
 		fmt.Fprintln(os.Stderr, "         or pass an explicit URL: agenton qr 'agenton://connect?host=…&port=9787'")
 		os.Exit(1)
