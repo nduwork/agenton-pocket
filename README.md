@@ -28,7 +28,8 @@ on both devices:
    the **same account**, and flip the VPN toggle **on**.
 
 Both devices are now on one private network; day to day you just leave the
-toggle on. (Local-only, no phone? Skip this and use `agenton up --lan`.)
+toggle on. (Don't want Tailscale? If your phone is on the same Wi-Fi, skip this
+and use `agenton --lan` to reach it over the local network instead.)
 
 ### 2. Install agenton
 
@@ -110,7 +111,11 @@ Share → **Add to Home Screen** for a full-screen launcher icon.
 
 Modes:
 - `agenton up` (default) — over the tailnet via the system Tailscale app.
-- `agenton up --lan` — localhost only, no tailnet publish.
+- `agenton up --lan` — over the local network: publishes this machine's LAN IP,
+  so phones/browsers on the same Wi-Fi can reach it. No tailnet. (`agenton --lan`
+  is shorthand.)
+
+Stop everything with `agenton stop` (ends the daemon, web, and all sessions).
 
 ## Using the TUI
 
@@ -190,6 +195,9 @@ Presets pin an agent + cwd + custom buttons under a name:
     agenton web             # just the web server (default 127.0.0.1:9787)
     agenton daemon          # just the daemon (socket at ~/.agenton/agenton.sock)
     agenton qr              # publish over Tailscale + print the iOS connect QR
+    agenton --lan           # start everything, but publish the LAN IP (local network)
+    agenton stop            # stop the daemon + web (ends all sessions)
+    agenton help            # top-level usage (`agenton <cmd> -h` for a command's flags)
 
 ## Test
 
