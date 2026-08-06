@@ -12,9 +12,17 @@ on:
 
 permissions: {}
 
+# One live run per PR: a duplicate or newer event supersedes the older run
+# instead of leaving zombies (a duplicate webhook delivery once left a run
+# stuck in_progress for an hour on a 7-second job).
+concurrency:
+  group: pr-title-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: PR title starts with a Conventional Commit type
         env:
