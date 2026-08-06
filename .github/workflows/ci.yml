@@ -18,10 +18,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # `test` is a required status check, so the job must always run and report
       # green — but on docs-only changes we skip the actual Go work below.
-      - uses: dorny/paths-filter@v3
+      - uses: dorny/paths-filter@v4
         id: changes
         with:
           # 'every' so a file must match '**' AND all the '!' exclusions;
@@ -35,7 +35,7 @@ jobs:
               - '!**/*.md'
               - '!LICENSE'
       - if: steps.changes.outputs.code == 'true'
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
       - if: steps.changes.outputs.code == 'true'
