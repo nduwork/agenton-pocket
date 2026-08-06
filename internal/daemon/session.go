@@ -9,7 +9,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"sort"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -19,6 +18,7 @@ import (
 	"golang.org/x/sys/unix"
 
 	"github.com/nduwork/agenton-pocket/internal/protocol"
+	"github.com/nduwork/agenton-pocket/internal/vtmode"
 )
 
 // emuScrollback is the depth of the daemon-side emulator's history. It bounds
@@ -261,7 +261,7 @@ func (s *Session) handleOutput(b []byte) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.LastActivity = time.Now().Unix()
-	updatePrivateModes(b, s.modes)
+	vtmode.UpdatePrivateModes(b, s.modes)
 	_, _ = s.emu.Write(b)
 	for ch := range s.subs {
 		select {
@@ -543,45 +543,6 @@ func (s *Session) SubscribeWithScrollback(cw *connWriter) (chan []byte, [][]byte
 	// history, current screen, cursor — so the attaching client starts with
 	// the whole conversation in its own scrollback, scrollable natively.
 	return ch, serializeReplay(s.emu, s.modes)
-}
-
-// updatePrivateModes scans b for DEC private-mode set/reset sequences
-// (ESC [ ? params h/l) and applies them to modes. A sequence split across
-// output chunks won't match; that's rare (escapes are tiny vs. chunk size) and
-// self-corrects on the next mode change. claude sets its modes once at startup
-// in a single chunk, so they're captured reliably.
-func updatePrivateModes(b []byte, modes map[int]bool) {
-	for i := 0; i < len(b); i++ {
-		if b[i] != 0x1b || i+1 >= len(b) || b[i+1] != '[' {
-			continue
-		}
-		j := i + 2
-		if j >= len(b) || b[j] != '?' {
-			continue
-		}
-		j++
-		start := j
-		for j < len(b) && (b[j] >= '0' && b[j] <= '9' || b[j] == ';') {
-			j++
-		}
-		if j >= len(b) || (b[j] != 'h' && b[j] != 'l') {
-			continue
-		}
-		set := b[j] == 'h'
-		for _, field := range strings.Split(string(b[start:j]), ";") {
-			if field == "" {
-				continue
-			}
-			if n, err := strconv.Atoi(field); err == nil {
-				if set {
-					modes[n] = true
-				} else {
-					delete(modes, n)
-				}
-			}
-		}
-		i = j // skip past the sequence
-	}
 }
 
 // modeRestoreBytes builds the ESC[?Nm sequence that re-enables every currently
