@@ -26,10 +26,11 @@ Modes:
   agenton up            bind this machine's tailnet IP via the system Tailscale
                         app, so the phone can reach it. Free plan, nothing to
                         approve — agenton registers no tailnet node of its own.
-  agenton up --lan      localhost only; no tailnet publish.
+  agenton up --lan      bind the local network: publish this machine's LAN IP so
+                        phones/browsers on the same Wi-Fi can reach it. No tailnet.
 
-agenton serves plain HTTP. Your tailnet is the security boundary: only devices
-logged into it can reach the port, and nothing is exposed to the internet.
+agenton serves plain HTTP. In tailnet mode the tailnet is the security boundary;
+in --lan mode your local network is — nothing is exposed to the internet either way.
 
 Flags:
 `
@@ -41,7 +42,7 @@ func runUp(args []string) {
 	fs := flag.NewFlagSet("up", flag.ExitOnError)
 	fs.Usage = func() { fmt.Fprint(os.Stderr, upUsage); fs.PrintDefaults() }
 	noTUI := fs.Bool("no-tui", false, "start daemon + web only (headless/server use)")
-	lan := fs.Bool("lan", false, "bind localhost only (no tailnet publish)")
+	lan := fs.Bool("lan", false, "bind the local network; publish this machine's LAN IP (no tailnet)")
 	_ = fs.Parse(args)
 
 	mode := "tailnet"
@@ -60,7 +61,12 @@ func runUp(args []string) {
 
 	switch mode {
 	case "lan":
-		fmt.Printf("agenton: web ready (http://%s)\n", defaultWebAddr)
+		if info, ok := readTailnetInfo(); ok {
+			announceEndpoint(info)
+		} else {
+			// serveLan couldn't resolve a LAN IP and fell back to localhost.
+			fmt.Printf("agenton: web ready (http://%s) — localhost only (no LAN IP found).\n", defaultWebAddr)
+		}
 	default: // tailnet
 		if info, ok := readTailnetInfo(); ok {
 			announceEndpoint(info)
