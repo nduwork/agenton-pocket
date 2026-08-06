@@ -1,0 +1,30 @@
+name: pr-title
+
+# PRs are squash-merged, so the PR title becomes the commit message on main
+# that release-please parses for changelog entries and version bumps. A title
+# without a Conventional Commit type ships silently — no release is cut (#23).
+# This gates every PR on a typed title. `edited` re-runs the check when the
+# title is fixed without a new push.
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions: {}
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: PR title starts with a Conventional Commit type
+        env:
+          # Via env, not inline ${{ }}, so a crafted title can't inject shell.
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          if printf '%s' "$TITLE" | grep -qE '^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-zA-Z0-9._/-]+\))?!?: .+'; then
+            echo "ok: $TITLE"
+          else
+            echo "::error::PR title must be 'type(optional-scope): summary' with type one of: feat fix docs style refactor perf test build ci chore revert (append ! for breaking). Got: $TITLE"
+            echo "::error::The squash-merge title is the commit release-please versions from — an untyped title skips the changelog and the release."
+            exit 1
+          fi

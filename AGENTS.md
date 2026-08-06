@@ -62,6 +62,15 @@ lists the sessions it will kill first.
 
 - Use Conventional Commit messages — release-please builds the changelog and
   version bumps from them. Don't hand-edit `CHANGELOG.md`.
+- **PR titles must carry a Conventional Commit type** —
+  `type(optional-scope): summary`, where type is one of `feat` `fix` `docs`
+  `style` `refactor` `perf` `test` `build` `ci` `chore` `revert` (append `!`
+  for a breaking change). PRs are squash-merged, so **the PR title becomes the
+  commit on main that release-please versions from** — a title without a type
+  ships silently: no changelog entry, no version bump, no release build (PR
+  #23 missed its release exactly this way). CI enforces this (`pr-title.yml`);
+  pick the type by the dominant change: user-facing behavior → `feat`/`fix`,
+  docs-only → `docs`, CI/tooling → `ci`/`chore`.
 - Update docs in the same change that alters behavior. If you add/rename/remove
   a CLI command or flag, or change what a mode does, update `README.md` (the
   Quickstart, Modes, and `## Commands` list) and `agenton help`/`up -h` usage
