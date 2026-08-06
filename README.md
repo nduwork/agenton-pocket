@@ -18,9 +18,9 @@ be reused unchanged by a future native iOS client.
 ### 1. Set up Tailscale first
 
 agenton reaches your phone over [Tailscale](https://tailscale.com), so configure
-that **before** running agenton — the default `agenton` publishes over your
-tailnet and has nothing to bind to without it ([why](#why-tailscale)). One-time,
-on both devices:
+that **before** running agenton — `agenton vpn` publishes over your tailnet and
+has nothing to bind to without it ([why](#why-tailscale)). One-time, on both
+devices:
 
 1. **Computer** — install Tailscale (`brew install tailscale`, or the
    [download](https://tailscale.com/download)), open the app, and log in.
@@ -29,7 +29,7 @@ on both devices:
 
 Both devices are now on one private network; day to day you just leave the
 toggle on. (Don't want Tailscale? If your phone is on the same Wi-Fi, skip this
-and use `agenton --lan` to reach it over the local network instead.)
+and use `agenton lan` to reach it over the local network instead.)
 
 ### 2. Install agenton
 
@@ -65,16 +65,21 @@ directory up front:
 
 From anywhere (with the Tailscale app running from step 1):
 
-    agenton
+    agenton vpn
 
-That starts everything: the daemon (if not running), the web server (if not
-running), and drops you into the TUI. It publishes the phone bridge over your
-tailnet and prints a QR — no extra config, nothing to approve. Quitting the TUI
-leaves the daemon, web server, and all sessions running — `agenton` again to
-come back.
+That starts everything: the daemon, the web server, and drops you into the TUI.
+It publishes the phone bridge over your tailnet and prints a QR — no extra
+config, nothing to approve. (On the same Wi-Fi and don't want Tailscale? Use
+`agenton lan` instead, which publishes this machine's LAN IP.)
+
+You pick the reach — `vpn` or `lan` — once, when starting. After that, bare
+`agenton` resumes the session (reopens the TUI); quitting the TUI leaves the
+daemon, web server, and all sessions running. `agenton stop` ends everything.
+Starting again is refused while agenton is already up, so the reach never
+changes mid-run.
 Logs land in `~/.local/state/agenton/`.
 
-Headless (a server that only needs daemon + web): `agenton up -no-tui`.
+Headless (a server that only needs daemon + web): `agenton vpn -no-tui`.
 
 Prefer to build by hand? `go build -o agenton ./cmd/agenton` still works; run it
 as `./agenton`.
@@ -98,7 +103,7 @@ works on the **free** plan. Install it once on both devices ([Quickstart step
 
 ### Connect (every day)
 
-    agenton up -no-tui      # binds the computer's tailnet IP and prints a connect QR
+    agenton vpn -no-tui   # binds the computer's tailnet IP and prints a connect QR
 
 On the phone, open the agenton iOS app, tap ⚙︎ → **Scan QR**, and scan the block
 it printed. Reprint any time with `agenton qr`.
@@ -109,13 +114,14 @@ URL you can scan with the phone's plain **Camera** (it opens straight in the
 browser — no scheme, no app). To make it feel like an app, use the browser's
 Share → **Add to Home Screen** for a full-screen launcher icon.
 
-Modes:
-- `agenton up` (default) — over the tailnet via the system Tailscale app.
-- `agenton up --lan` — over the local network: publishes this machine's LAN IP,
-  so phones/browsers on the same Wi-Fi can reach it. No tailnet. (`agenton --lan`
-  is shorthand.)
+Modes (pick one when starting):
+- `agenton vpn` — over the tailnet via the system Tailscale app, reachable anywhere.
+- `agenton lan` — over the local network: publishes this machine's LAN IP, so
+  phones/browsers on the same Wi-Fi can reach it. No tailnet.
 
-Stop everything with `agenton stop` (ends the daemon, web, and all sessions).
+Once running, bare `agenton` resumes the session and `agenton stop` ends
+everything (daemon, web, all sessions). Starting again is refused while agenton
+is already up, so the reach never changes mid-run.
 
 ## Using the TUI
 
@@ -136,6 +142,13 @@ reserved key is `ctrl+t`, which returns to the session list to switch sessions
 (the session keeps running, so it doubles as detach). The on-screen button pad
 and custom-key rebinding live on the phone/web clients, where there's no
 physical keyboard to type with.
+
+**Scrolling & copying.** Mouse-wheel up/down pages through session history — at
+a shell you scroll agenton's scrollback; inside `claude`/`codex` the wheel
+scrolls their own view. To **select and copy** text, hold your terminal's
+selection modifier and drag — **Option+drag** in iTerm2/Ghostty, **Shift+drag**
+in most Linux terminals and macOS Terminal. Scroll the history into view first,
+then modifier-drag to copy from it.
 
 ## Using the web client
 
@@ -189,13 +202,14 @@ Presets pin an agent + cwd + custom buttons under a name:
 
 ## Commands
 
-    agenton                 # start everything (daemon + web if needed) and open the TUI
-    agenton up -no-tui      # start daemon + web only (headless/server)
+    agenton vpn             # start over your tailnet (Tailscale), then open the TUI
+    agenton lan             # start over your local network (LAN IP), then open the TUI
+    agenton                 # resume the running session (open the TUI)
+    agenton vpn -no-tui     # start daemon + web only (headless/server)
     agenton tui             # just the TUI (daemon must be running)
     agenton web             # just the web server (default 127.0.0.1:9787)
     agenton daemon          # just the daemon (socket at ~/.agenton/agenton.sock)
     agenton qr              # publish over Tailscale + print the iOS connect QR
-    agenton --lan           # start everything, but publish the LAN IP (local network)
     agenton stop            # stop the daemon + web (ends all sessions)
     agenton help            # top-level usage (`agenton <cmd> -h` for a command's flags)
 

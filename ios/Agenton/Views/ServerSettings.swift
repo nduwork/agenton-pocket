@@ -39,7 +39,7 @@ struct ServerSettings: View {
                     Button("Test connection", action: test)
                     if !probe.isEmpty { Text(probe).font(.footnote).foregroundStyle(Theme.dim) }
                 } footer: {
-                    Text("Don't have it yet? Install the daemon, then run `agenton up` (or `agenton qr`) on the host — it prints a QR to scan, or reach it over your tailnet by hand.")
+                    Text("Don't have it yet? Install the daemon, then run `agenton vpn` (or `agenton qr`) on the host — it prints a QR to scan, or reach it over your tailnet by hand.")
                 }
             }
             .navigationTitle("Server")

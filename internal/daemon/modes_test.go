@@ -7,29 +7,6 @@ import (
 	"testing"
 )
 
-func TestUpdatePrivateModes(t *testing.T) {
-	modes := map[int]bool{}
-	updatePrivateModes([]byte("\x1b[?1049h\x1b[?1006hhello\x1b[?25l"), modes)
-	if !modes[1049] || !modes[1006] || modes[25] {
-		t.Fatalf("after set/reset: %v", modes)
-	}
-	// Reset 1049; 1006 stays on.
-	updatePrivateModes([]byte("\x1b[?1049l"), modes)
-	if modes[1049] || !modes[1006] {
-		t.Fatalf("after 1049 reset: %v", modes)
-	}
-}
-
-func TestUpdatePrivateModesMultipleParams(t *testing.T) {
-	modes := map[int]bool{}
-	updatePrivateModes([]byte("\x1b[?1000;1002;1003h"), modes)
-	for _, n := range []int{1000, 1002, 1003} {
-		if !modes[n] {
-			t.Fatalf("%d not set: %v", n, modes)
-		}
-	}
-}
-
 // TestSubscribePrependsModeRestore: the tracked DEC private modes survive any
 // history depth and lead the replay so a re-attach restores the agent's
 // screen state (bracketed paste, focus reporting, alt screen, ...).

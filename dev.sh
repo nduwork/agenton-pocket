@@ -54,7 +54,7 @@ done
 if [ "$ANY_STEP" -eq 0 ]; then DO_STOP=1 DO_BUILD=1 DO_START=1 DO_IOS=1; fi
 
 # A daemon launched from inside an agenton session would steal the socket, and
-# `agenton up` refuses anyway — fail early with a clearer message.
+# `agenton vpn`/`lan` refuse anyway — fail early with a clearer message.
 if [ "$DO_START" -eq 1 ] && [ -n "${AGENTON_SESSION:-}" ]; then
   echo "dev.sh: you're inside an agenton session; run this from a normal shell." >&2
   exit 1
@@ -99,9 +99,9 @@ fi
 if [ "$DO_START" -eq 1 ]; then
   say "Starting daemon + web (mode: $MODE)"
   if [ "$MODE" = lan ]; then
-    ./agenton up -no-tui --lan
+    ./agenton lan -no-tui
   else
-    ./agenton up -no-tui
+    ./agenton vpn -no-tui
   fi
 fi
 

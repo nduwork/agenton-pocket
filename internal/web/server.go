@@ -29,7 +29,7 @@ func Handler(socketPath string) http.Handler {
 	// after the daemon is updated. Never caching keeps clients on the current
 	// assets (payloads are tiny; the WS stream is what carries the traffic).
 	mux.Handle("/", noStore(http.FileServer(http.FS(static))))
-	// Identity probe so `agenton up` can tell this server apart from whatever
+	// Identity probe so the `agenton vpn`/`lan` starter can tell this server apart from whatever
 	// else may sit on the port (Dask dashboards also default to 8787).
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write([]byte("agenton"))

@@ -141,8 +141,10 @@ fi
 cat <<'EOF'
 
 Setup complete. From anywhere:
-       agenton              # daemon + web + TUI
-       agenton up -no-tui   # headless server
+       agenton vpn           # start over your tailnet (Tailscale): daemon + web + TUI
+       agenton lan           # start over your local network (same Wi-Fi) instead
+       agenton vpn -no-tui   # headless server
+       agenton               # resume the running session
 
 With the Tailscale app running, agenton publishes the phone bridge over your
 tailnet and prints a connect QR — nothing to approve, no login link. Reprint it
