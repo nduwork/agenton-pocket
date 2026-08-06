@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
 )
 
 // version is stamped at release time via -ldflags "-X main.version=…"
@@ -15,8 +14,9 @@ const usage = `agenton — run coding agents on this machine, reach them from yo
 usage: agenton [command] [flags]
 
 Commands:
-  (none)      start daemon + web if needed, then open the TUI (same as ` + "`up`" + `)
-  up          start daemon + web, publish over your tailnet; --lan for localhost only
+  (none)      resume the running session (open the TUI); start it first with vpn/lan
+  vpn         start over your tailnet (Tailscale) — reachable anywhere
+  lan         start over your local network (same Wi-Fi)
   daemon      run the session daemon in the foreground
   tui         attach the terminal UI to a running daemon
   web         run the web server in the foreground
@@ -25,22 +25,26 @@ Commands:
   version     print the version
   help        show this help
 
-Run ` + "`agenton <command> -h`" + ` for a command's flags (e.g. ` + "`agenton up -h`" + `).
+Add -no-tui to vpn/lan for a headless server. Run ` + "`agenton <command> -h`" + ` for flags.
 `
 
 func main() {
 	if len(os.Args) < 2 {
-		// Bare `agenton` = start everything: daemon + web if missing, then TUI.
+		// Bare `agenton` = resume the running daemon's TUI (or, if nothing is
+		// running, runResume prints how to start with vpn/lan).
 		refuseNested("agenton")
-		runUp(nil)
+		runResume()
 		return
 	}
 	switch os.Args[1] {
 	case "help", "-h", "--help":
 		fmt.Print(usage)
-	case "up":
-		refuseNested("up")
-		runUp(os.Args[2:])
+	case "vpn":
+		refuseNested("vpn")
+		runStart("tailnet", os.Args[2:])
+	case "lan":
+		refuseNested("lan")
+		runStart("lan", os.Args[2:])
 	case "daemon":
 		refuseNested("daemon")
 		runDaemon(os.Args[2:])
@@ -55,18 +59,12 @@ func main() {
 	case "version", "-version", "--version":
 		fmt.Println(version)
 	default:
-		// `agenton --lan`, `agenton --no-tui`, … = the same flags on `up`.
-		if strings.HasPrefix(os.Args[1], "-") {
-			refuseNested("up")
-			runUp(os.Args[1:])
-			return
-		}
-		fmt.Fprintf(os.Stderr, "unknown subcommand: %s\nusage: agenton [up|daemon|tui|web|qr|stop|version|help] [args]\n", os.Args[1])
+		fmt.Fprintf(os.Stderr, "unknown subcommand: %s\nusage: agenton [vpn|lan|daemon|tui|web|qr|stop|version|help] [args]\n", os.Args[1])
 		os.Exit(2)
 	}
 }
 
-// refuseNested stops a daemon (or bare/up, which spawns one) from launching
+// refuseNested stops a daemon (or bare/vpn/lan, which spawns one) from launching
 // inside a shell the daemon itself owns. transport.Listen removes the existing
 // socket before binding, so a nested daemon would silently steal the running
 // daemon's socket and orphan every attached client. AGENTON_SESSION is set on

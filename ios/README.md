@@ -53,13 +53,13 @@ package on first open.
 
 1. On your Mac (or wherever the agent runs), start the daemon + web bridge:
    ```sh
-   agenton up        # daemon + web + TUI
+   agenton vpn     # daemon + web + TUI (over your tailnet)
    # or just the bridge:  agenton web
    ```
 2. Make it reachable from the phone — a Tailscale hostname is easiest:
    `mac.your-tailnet.ts.net`.
 3. In the app, tap ⚙︎ and enter that host + port `9787`. Or tap **Scan QR** and
-   scan the block `agenton qr` (or `agenton up`) prints. **Test connection**
+   scan the block `agenton qr` (or `agenton vpn`) prints. **Test connection**
    should report `✓ reached agenton`. The bridge is plain `ws://` over the
    tailnet — there is no TLS option, by design.
 4. Back out — sessions load. Tap one to attach, or launch a new command.
