@@ -62,22 +62,54 @@ func runResume() {
 	runTUI(nil)
 }
 
+// startCmd names the user-facing subcommand for an internal mode, for messages.
+func startCmd(mode string) string {
+	if mode == "lan" {
+		return "lan"
+	}
+	return "vpn"
+}
+
+// webAlive reports whether the current run's web is still serving: the
+// published endpoint answers, or the localhost fallback does.
+func webAlive() bool {
+	if info, ok := readTailnetInfo(); ok && agentonAnswers(tailnetAddr(info)) {
+		return true
+	}
+	return webStatus() == webOurs
+}
+
 // runStart brings up the daemon + web in mode ("tailnet" or "lan") and opens the
-// TUI. It refuses when a daemon is already running, so a stray `agenton lan`
-// can't spin up a second web in a different mode behind the one you started —
-// the reach is fixed for the life of the daemon. Quitting the TUI leaves daemon
-// + web (and all sessions) running. args carries optional flags (-no-tui).
-func runStart(mode string, args []string) {
-	fs := flag.NewFlagSet(mode, flag.ExitOnError)
+// TUI. It refuses when a daemon is already running with a live web, so a stray
+// `agenton lan` can't spin up a second web in a different mode behind the one
+// you started — the reach is fixed for the life of the daemon. The exception is
+// recovery: if the web died while the daemon (and its sessions) survived, a
+// same-reach start restarts just the web, so recovery never requires
+// `agenton stop`. Quitting the TUI leaves daemon + web (and all sessions)
+// running. cmd is the subcommand the user typed (for flag-parse messages); args
+// carries optional flags (-no-tui).
+func runStart(cmd, mode string, args []string) {
+	fs := flag.NewFlagSet(cmd, flag.ExitOnError)
 	fs.Usage = func() { fmt.Fprint(os.Stderr, startUsage); fs.PrintDefaults() }
 	noTUI := fs.Bool("no-tui", false, "start daemon + web only (headless/server use)")
 	_ = fs.Parse(args)
 
 	if daemonRunning() {
-		fmt.Fprintln(os.Stderr, "agenton: already running — the reach is fixed for this run.")
-		fmt.Fprintln(os.Stderr, "  agenton        resume the session")
-		fmt.Fprintln(os.Stderr, "  agenton stop   stop it (ends all sessions), then start again")
-		os.Exit(1)
+		if webAlive() {
+			fmt.Fprintln(os.Stderr, "agenton: already running — the reach is fixed for this run.")
+			fmt.Fprintln(os.Stderr, "  agenton        resume the session")
+			fmt.Fprintln(os.Stderr, "  agenton stop   stop it (ends all sessions), then start again")
+			os.Exit(1)
+		}
+		// Daemon alive, web dead: allow restarting the web — but only in the
+		// reach this run was started with.
+		if info, ok := readTailnetInfo(); ok && info.Mode != "" && info.Mode != mode {
+			fmt.Fprintf(os.Stderr, "agenton: running in %s mode with its web down.\n", startCmd(info.Mode))
+			fmt.Fprintf(os.Stderr, "  agenton %s     restart its web\n", startCmd(info.Mode))
+			fmt.Fprintln(os.Stderr, "  agenton stop    stop everything (ends all sessions), then start with the new reach")
+			os.Exit(1)
+		}
+		fmt.Fprintln(os.Stderr, "agenton: daemon already running — restarting its web bridge.")
 	}
 
 	sock := defaultSocketPath()
@@ -169,8 +201,14 @@ func ensureDaemon(sock string) error {
 // ensureWeb makes sure a web server for the chosen mode is up, spawning one
 // (detached) if not. lan binds localhost, so readiness is the local probe.
 // tailnet binds the tailnet IP (or localhost on fallback), so readiness is a
-// live published endpoint or a live localhost fallback.
+// live published endpoint or a live localhost fallback. A live web of the
+// *other* reach (possible when the daemon died but the web survived) is
+// refused, never adopted — the user chose this reach explicitly.
 func ensureWeb(mode string) error {
+	if info, ok := readTailnetInfo(); ok && info.Mode != "" && info.Mode != mode && agentonAnswers(tailnetAddr(info)) {
+		return fmt.Errorf("a %s-mode web from an earlier run is still serving (%s); `agenton stop`, then `agenton %s`",
+			startCmd(info.Mode), endpointURL(info), startCmd(mode))
+	}
 	if mode == "tailnet" {
 		return ensureWebTailnet()
 	}

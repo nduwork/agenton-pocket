@@ -7,7 +7,7 @@ import (
 	"github.com/nduwork/agenton-pocket/internal/web"
 )
 
-// runWeb serves the phone bridge in one of two modes (see up_cmd.go):
+// runWeb serves the phone bridge in one of two modes (see start_cmd.go):
 //
 //	tailnet (default) bind this machine's tailnet IP via the system Tailscale app
 //	lan               localhost only; no tailnet publish

@@ -18,12 +18,15 @@ import (
 	"tailscale.com/ipn/ipnstate"
 )
 
-// tailnetInfo is the resolved tailnet endpoint the phone should hit. The web
-// process writes it; `qr` and `up` read it. Keeping the handoff in a file means
-// the short-lived qr/up processes never have to talk to Tailscale themselves.
+// tailnetInfo is the resolved endpoint the phone should hit. The web process
+// writes it; `qr` and the vpn/lan starters read it. Keeping the handoff in a
+// file means the short-lived qr/start processes never have to talk to
+// Tailscale themselves. Mode records which reach ("tailnet" or "lan") the web
+// bound, so a starter never silently adopts a live web of the other reach.
 type tailnetInfo struct {
 	Host string `json:"host"`
 	Port int    `json:"port"`
+	Mode string `json:"mode,omitempty"`
 }
 
 func tailnetStatePath() string { return filepath.Join(stateDir(), "tailnet.json") }
@@ -109,20 +112,16 @@ func serveApp(handler http.Handler) {
 		log.Fatalf("agenton: cannot bind tailnet address %s: %v", addr, err)
 	}
 	// Write tailnet.json only after a successful bind, so its presence is a real
-	// liveness signal for `up`/`qr` (not a stale file from a dead run).
-	_ = writeTailnetInfo(tailnetInfo{Host: host, Port: 9787})
+	// liveness signal for the starter/`qr` (not a stale file from a dead run).
+	_ = writeTailnetInfo(tailnetInfo{Host: host, Port: 9787, Mode: "tailnet"})
 	log.Printf("agenton: serving http://%s:9787 over the tailnet", host)
 	log.Printf("agenton: serve ended: %v", http.Serve(ln, handler))
 }
 
 // serveLan binds every interface on :9787 so devices on the same local network
 // can reach it, and publishes this machine's LAN IPv4 as the endpoint — so `qr`
-// and `up` hand the phone a reachable address, not 127.0.0.1. agenton serves
-// plain HTTP; in this mode the local network is the security boundary.
-//
-// ponytail: like tailnet↔localhost, switching an already-running web into/out of
-// lan mode still needs a `pkill -f 'agenton web'` first — a live web on :9787 is
-// treated as ready regardless of which mode it's in (see ensureWeb).
+// and the starter hand the phone a reachable address, not 127.0.0.1. agenton
+// serves plain HTTP; in this mode the local network is the security boundary.
 func serveLan(handler http.Handler) {
 	ip, err := lanIP()
 	if err != nil {
@@ -135,8 +134,8 @@ func serveLan(handler http.Handler) {
 		log.Fatalf("agenton: cannot bind :9787: %v", err)
 	}
 	// Write tailnet.json only after a successful bind, so its presence is a real
-	// liveness signal for `up`/`qr` (not a stale file from a dead run).
-	_ = writeTailnetInfo(tailnetInfo{Host: ip, Port: 9787})
+	// liveness signal for the starter/`qr` (not a stale file from a dead run).
+	_ = writeTailnetInfo(tailnetInfo{Host: ip, Port: 9787, Mode: "lan"})
 	log.Printf("agenton: serving http://%s:9787 on the local network", ip)
 	log.Printf("agenton: serve ended: %v", http.Serve(ln, handler))
 }

@@ -41,10 +41,10 @@ func main() {
 		fmt.Print(usage)
 	case "vpn":
 		refuseNested("vpn")
-		runStart("tailnet", os.Args[2:])
+		runStart("vpn", "tailnet", os.Args[2:])
 	case "lan":
 		refuseNested("lan")
-		runStart("lan", os.Args[2:])
+		runStart("lan", "lan", os.Args[2:])
 	case "daemon":
 		refuseNested("daemon")
 		runDaemon(os.Args[2:])
