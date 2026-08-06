@@ -1,11 +1,12 @@
 package tui
 
 import (
+	"io"
+	"strings"
 	"testing"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/x/vt"
-	"github.com/taigrr/bubbleterm/emulator"
 )
 
 // wheelButton maps a Bubble Tea wheel button to the vt mouse-button code the
@@ -63,10 +64,7 @@ func TestWheelCoords(t *testing.T) {
 // and enqueue nothing for clicks/motion (wheel-only) or while parked (a frozen
 // frame has nothing live to scroll).
 func TestHandleWheelEnqueuesOnlyForVerticalWheel(t *testing.T) {
-	emu, err := emulator.New(80, 24)
-	if err != nil {
-		t.Fatalf("emulator.New: %v", err)
-	}
+	emu := newVTEmu(80, 24, strings.NewReader(""), io.Discard)
 	defer emu.Close()
 
 	newModel := func() *sessionModel {

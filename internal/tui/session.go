@@ -8,7 +8,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/vt"
-	"github.com/taigrr/bubbleterm/emulator"
 
 	"github.com/nduwork/agenton-pocket/internal/client"
 )
@@ -24,7 +23,7 @@ type sessionModel struct {
 	id     uint32
 	name   string
 
-	emu      *emulator.Emulator
+	emu      *vtEmu
 	reader   *chanReader
 	outCh    <-chan []byte
 	activeCh <-chan bool
@@ -92,10 +91,7 @@ func newSessionModel(c *client.Client, id uint32, name string) *sessionModel {
 		m.outCh = out
 		m.activeCh = active
 		m.reader = newChanReader(out)
-		emu, err := emulator.NewFromPipes(80, 24, m.reader, newForwardingWriter(c, id))
-		if err == nil {
-			m.emu = emu
-		}
+		m.emu = newVTEmu(80, 24, m.reader, newForwardingWriter(c, id))
 	}
 	return m
 }
@@ -172,7 +168,7 @@ func (m *sessionModel) Close() error {
 
 // waitForDamage blocks until the emulator signals screen changes (or the
 // emulator closes), then returns a renderTickMsg to trigger a re-render.
-func waitForDamage(emu *emulator.Emulator) tea.Cmd {
+func waitForDamage(emu *vtEmu) tea.Cmd {
 	if emu == nil {
 		return nil
 	}
