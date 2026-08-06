@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.2](https://github.com/nduwork/agenton-pocket/compare/v0.1.1...v0.1.2) (2026-08-06)
+
+
+### Features
+
+* **cli:** --help, --lan LAN publish, and stop ([#22](https://github.com/nduwork/agenton-pocket/issues/22)) ([9fa9520](https://github.com/nduwork/agenton-pocket/commit/9fa9520d17647824843544d816fc157b2eb9b3ad))
+* **site:** consolidate landing page — new visual design + inline install quick-start ([1d0f5d1](https://github.com/nduwork/agenton-pocket/commit/1d0f5d1e450e9084d2a7bcdc02443621cee32785))
+
+
+### Miscellaneous Chores
+
+* release 0.1.2 ([d7ced9c](https://github.com/nduwork/agenton-pocket/commit/d7ced9cea93224cdd6c1cb53fb047b5dcbdf9f33))
+
 ## [0.1.1](https://github.com/nduwork/agenton-pocket/compare/v0.1.0...v0.1.1) (2026-07-26)
 
 
