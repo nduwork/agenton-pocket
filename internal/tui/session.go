@@ -1,12 +1,14 @@
 package tui
 
 import (
+	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	uv "github.com/charmbracelet/ultraviolet"
 	"github.com/charmbracelet/x/vt"
 
 	"github.com/nduwork/agenton-pocket/internal/client"
@@ -40,6 +42,12 @@ type sessionModel struct {
 	// last good frame and dims it behind a takeover hint.
 	parked bool
 	frozen string
+
+	// scrollTop is the absolute scrollback offset of the top visible row: 0 is
+	// the live bottom, N pages N lines up into history. Only used when the agent
+	// hasn't enabled mouse tracking (a shell); claude/codex get the wheel forwarded
+	// and scroll their own view instead.
+	scrollTop int
 
 	// inputCh serializes all outbound input (keystrokes, take-over claims) so it
 	// reaches the daemon PTY in the order typed. Bubble Tea runs every returned
@@ -253,6 +261,7 @@ func (m *sessionModel) handleKey(k tea.KeyMsg) (*sessionModel, tea.Cmd) {
 	if k.String() == "ctrl+t" {
 		return m, func() tea.Msg { return backToEntryMsg{} }
 	}
+	m.scrollTop = 0 // any key returns to the live prompt (like tmux copy-mode exit)
 	b := encodeTeaKey(k)
 	// Any key takes over while parked: input no longer auto-claims the size, so
 	// claim it explicitly — the "press any key to take over" contract. Clear
@@ -302,10 +311,35 @@ func (m *sessionModel) handleWheel(msg tea.MouseMsg) (*sessionModel, tea.Cmd) {
 	if !ok {
 		return m, nil // wheel-only: clicks and motion are left to the host terminal
 	}
-	x, y := wheelCoords(msg, hintHeight, m.cols, m.termRows)
-	emu := m.emu
-	m.enqueue(func() { _ = emu.SendMouseWheel(button, x, y) })
-	return m, nil
+	// Agent owns the wheel (claude/codex enabled mouse tracking): forward it so
+	// the agent scrolls its own conversation — exactly like a raw terminal.
+	if m.emu.MouseTrackingOn() {
+		x, y := wheelCoords(msg, hintHeight, m.cols, m.termRows)
+		emu := m.emu
+		m.enqueue(func() { _ = emu.SendMouseWheel(button, x, y) })
+		return m, nil
+	}
+	// Otherwise page our own scrollback (shell, or any non-mouse program).
+	delta := 3 // rows per wheel notch
+	if button == int(vt.MouseWheelDown) {
+		delta = -delta
+	}
+	m.scrollTop = clampScrollTop(m.scrollTop, delta, m.emu.ScrollbackLen())
+	return m, func() tea.Msg { return renderTickMsg{} }
+}
+
+// clampScrollTop applies a wheel delta (positive = scroll up into history) to
+// the current offset, bounded to [0, max]. 0 is the live bottom; max is the
+// oldest scrollback line.
+func clampScrollTop(cur, delta, max int) int {
+	n := cur + delta
+	if n < 0 {
+		n = 0
+	}
+	if n > max {
+		n = max
+	}
+	return n
 }
 
 // wheelButton maps a Bubble Tea wheel button to the vt mouse-button code the
@@ -403,6 +437,9 @@ func (m *sessionModel) renderTerminal() string {
 	if m.emu == nil {
 		return "\n  " + errStyle.Render("could not attach a terminal to this session")
 	}
+	if m.scrollTop > 0 {
+		return m.renderScrolled()
+	}
 	rows := m.emu.GetScreen().Rows
 	// Draw the cursor where the agent's caret is. GetScreen bakes no cursor into
 	// its rows and Bubble Tea parks the hardware one bottom-left, so we splice a
@@ -415,6 +452,67 @@ func (m *sessionModel) renderTerminal() string {
 		}
 	}
 	return m.hintBar() + "\n" + strings.Join(rows, "\n")
+}
+
+// renderScrolled composes termRows lines from scrollback + the bottom of the
+// live screen. The full content is [scrollback(0..sbLen-1), screen(0..h-1)] and
+// the live view is its last termRows; scrollTop lifts that window up by N lines.
+// No cursor is spliced — the caret is meaningless while paused in history.
+func (m *sessionModel) renderScrolled() string {
+	sbLen := m.emu.ScrollbackLen()
+	w, h := m.emu.Width(), m.emu.Height()
+	if m.scrollTop > sbLen {
+		m.scrollTop = sbLen
+	}
+	base := sbLen - m.scrollTop // absolute index of the top visible line
+	rows := make([]string, m.termRows)
+	for r := 0; r < m.termRows; r++ {
+		abs := base + r
+		switch {
+		case abs < 0 || abs >= sbLen+h:
+			rows[r] = strings.Repeat(" ", w)
+		case abs < sbLen:
+			y := abs
+			rows[r] = styledRow(func(x int) *uv.Cell { return m.emu.ScrollbackCellAt(x, y) }, w)
+		default:
+			y := abs - sbLen
+			rows[r] = styledRow(func(x int) *uv.Cell { return m.emu.CellAt(x, y) }, w)
+		}
+	}
+	return m.hintBar() + "\n" + strings.Join(rows, "\n")
+}
+
+// styledRow renders one row of cells to ANSI: SGR transitions between cells,
+// grapheme content verbatim, and a trailing reset so style never leaks. Mirrors
+// the daemon's replay writeCells. nil/empty cells print as spaces to hold columns.
+func styledRow(cell func(x int) *uv.Cell, w int) string {
+	var b strings.Builder
+	cur := uv.Style{}
+	styled := false
+	for x := 0; x < w; x++ {
+		c := cell(x)
+		if c == nil {
+			b.WriteByte(' ')
+			continue
+		}
+		if c.Width == 0 && c.Content == "" {
+			continue // zero-width shadow of a preceding wide grapheme
+		}
+		if !c.Style.Equal(&cur) {
+			b.WriteString(c.Style.Diff(&cur))
+			cur = c.Style
+			styled = !cur.IsZero()
+		}
+		if c.Content == "" {
+			b.WriteByte(' ')
+		} else {
+			b.WriteString(c.Content)
+		}
+	}
+	if styled {
+		b.WriteString("\x1b[m")
+	}
+	return b.String()
 }
 
 // reverseCellAt wraps the visible cell at column col of an ANSI-styled row in
@@ -502,7 +600,12 @@ func (m *sessionModel) renderParked() string {
 var hintBarStyle = lipgloss.NewStyle().Reverse(true)
 
 func (m *sessionModel) hintBar() string {
-	bar := " ctrl+t → switch sessions"
+	// ⌥/⇧-drag is the host terminal's own selection (it bypasses our mouse
+	// capture); agenton just names it here since the capture hides that it works.
+	bar := " ctrl+t → switch sessions   ·   ⌥/⇧-drag → copy"
+	if m.scrollTop > 0 {
+		bar = " SCROLLBACK ↑" + strconv.Itoa(m.scrollTop) + "   ·   any key → live   ·   ⌥/⇧-drag → copy"
+	}
 	if m.width > 0 {
 		return hintBarStyle.Width(m.width).MaxWidth(m.width).Render(bar)
 	}
