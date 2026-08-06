@@ -847,6 +847,34 @@ go build -o /tmp/agenton ./cmd/agenton
 - Resize the terminal while scrolled and while live — no corruption. ✓
 - Open the **web** client and **iOS** app against the same session: scroll behaves exactly as before (untouched). ✓
 
-## Docs
+### Task 5: Document scroll + text selection (README)
 
-Update `AGENTS.md` only if a reader needs to know the TUI now owns its emulator (optional; the code comments in `vtemu.go` are the primary doc). No README/user-facing change — the wheel simply feels native now.
+**Files:**
+- Modify: `README.md` (the "Using the TUI" section)
+
+- [ ] **Step 1: Add a "Scrolling & copying" note**
+
+Under "Using the TUI", add:
+```markdown
+**Scrolling & copying.** Mouse-wheel up/down pages through session history — at
+a shell you scroll agenton's scrollback (a `SCROLLBACK ↑N` marker shows in the
+top bar; press any key to jump back to live), and inside claude/codex the wheel
+scrolls their own view. To **select and copy** text, hold your terminal's
+selection modifier and drag — **Option+drag** in iTerm2/Ghostty, **Shift+drag**
+in most Linux terminals and macOS Terminal. Scroll the history into view first,
+then modifier-drag to copy from it.
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add README.md
+git commit -m "docs: document TUI scrollback + modifier-drag text selection
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
+```
+
+## Notes
+
+`AGENTS.md` optionally gains a line that the TUI now owns its emulator
+(`internal/tui/vtemu.go`); the code comments there are the primary doc.

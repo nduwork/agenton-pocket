@@ -104,6 +104,23 @@ content stays put; clamp on each render in case scrollback overflows its cap.
   `writeCells`-style helper (the daemon's `replay.go` proves this rendering).
   Hide the spliced cursor. Hint bar shows `SCROLLBACK ↑N` so the state is obvious.
 
+## Text selection / copy
+
+Selecting and copying text is **delegated to the host terminal**, not
+implemented in agenton. The desktop TUI captures the mouse (`WithMouseCellMotion`)
+and renders in the alt-screen, so plain click-drag goes to agenton; but every
+mainstream terminal offers a modifier-bypass that does native selection of the
+on-screen glyphs regardless: **Option+drag** (iTerm2/Ghostty), **Shift+drag**
+(most Linux terminals + macOS Terminal). Because the terminal selects whatever
+glyphs are visible, this works for live output *and* for scrollback once the
+pager brings it on-screen — so the pager is what makes history copyable. This is
+confirmed viable in-repo: URLs are already click-through today, which means the
+output is real selectable text and the terminal's modifier-bypass is active.
+
+An app-side copy-mode (drag-select + OSC 52) and a mouse-free passthrough
+redesign were both considered and rejected for v1: they re-implement what the
+terminal already does. Deliverable here is a short README note, not code.
+
 ## Out of scope (v1)
 
 - A full-screen alt-screen app that does **not** enable mouse (e.g. `less`
