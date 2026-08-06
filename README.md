@@ -15,12 +15,22 @@ be reused unchanged by a future native iOS client.
 
 ## Quickstart
 
-### 1. Set up Tailscale first
+### 1. Pick how your phone reaches you
 
-agenton reaches your phone over [Tailscale](https://tailscale.com), so configure
-that **before** running agenton — `agenton vpn` publishes over your tailnet and
-has nothing to bind to without it ([why](#why-tailscale)). One-time, on both
-devices:
+agenton serves plain HTTP and opens no public port. It reaches your phone one of
+two ways — you choose which when you start, and **both are fully supported**:
+
+| Mode | Reach | Needs | Security boundary |
+|------|-------|-------|-------------------|
+| **`agenton vpn`** | anywhere — couch, cellular, another city | [Tailscale](https://tailscale.com) on both devices (free plan) | your tailnet |
+| **`agenton lan`** | same Wi-Fi / local network | nothing beyond agenton | your local network |
+
+Use `vpn` when you want to reach your desk from *anywhere*; use `lan` when your
+phone and computer share a network and you'd rather not run a VPN.
+
+**Going `lan`-only? Nothing to set up here — skip to [step 2](#2-install-agenton).**
+For `vpn`, set up [Tailscale](https://tailscale.com) once, on both devices
+([why](#why-tailscale)):
 
 1. **Computer** — install Tailscale (`brew install tailscale`, or the
    [download](https://tailscale.com/download)), open the app, and log in.
@@ -28,8 +38,7 @@ devices:
    the **same account**, and flip the VPN toggle **on**.
 
 Both devices are now on one private network; day to day you just leave the
-toggle on. (Don't want Tailscale? If your phone is on the same Wi-Fi, skip this
-and use `agenton lan` to reach it over the local network instead.)
+toggle on.
 
 ### 2. Install agenton
 
@@ -63,23 +72,25 @@ directory up front:
 
 ### 3. Run it
 
-From anywhere (with the Tailscale app running from step 1):
+Start with the reach you picked in step 1 — either works the same way:
 
-    agenton vpn
+    agenton vpn        # over your tailnet (Tailscale app running) — reachable anywhere
+    agenton lan        # over your local network — same Wi-Fi, no Tailscale needed
 
-That starts everything: the daemon, the web server, and drops you into the TUI.
-It publishes the phone bridge over your tailnet and prints a QR — no extra
-config, nothing to approve. (On the same Wi-Fi and don't want Tailscale? Use
-`agenton lan` instead, which publishes this machine's LAN IP.)
+Either one starts everything: the daemon, the web server, and drops you into the
+TUI, then prints a QR to connect your phone — no extra config, nothing to
+approve. `vpn` publishes your machine's tailnet address; `lan` publishes its LAN
+IP. (No Tailscale app running when you `agenton vpn`? It falls back to localhost
+and tells you how to publish once you start it.)
 
-You pick the reach — `vpn` or `lan` — once, when starting. After that, bare
-`agenton` resumes the session (reopens the TUI); quitting the TUI leaves the
-daemon, web server, and all sessions running. `agenton stop` ends everything.
-Starting again is refused while agenton is already up, so the reach never
-changes mid-run.
+You pick the reach once, when starting. After that, bare `agenton` resumes the
+session (reopens the TUI); quitting the TUI leaves the daemon, web server, and
+all sessions running. `agenton stop` ends everything. Starting again is refused
+while agenton is already up, so the reach never changes mid-run.
 Logs land in `~/.local/state/agenton/`.
 
-Headless (a server that only needs daemon + web): `agenton vpn -no-tui`.
+Headless (a server that only needs daemon + web): `agenton vpn -no-tui` or
+`agenton lan -no-tui`.
 
 Prefer to build by hand? `go build -o agenton ./cmd/agenton` still works; run it
 as `./agenton`.
