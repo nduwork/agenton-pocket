@@ -137,6 +137,14 @@ reserved key is `ctrl+t`, which returns to the session list to switch sessions
 and custom-key rebinding live on the phone/web clients, where there's no
 physical keyboard to type with.
 
+**Scrolling & copying.** Mouse-wheel up/down pages through session history — at
+a shell you scroll agenton's scrollback (a `SCROLLBACK ↑N` marker shows in the
+top bar; press any key to jump back to live), and inside `claude`/`codex` the
+wheel scrolls their own view. To **select and copy** text, hold your terminal's
+selection modifier and drag — **⌥ (Option)+drag** in iTerm2/Ghostty, **⇧
+(Shift)+drag** in most Linux terminals and macOS Terminal. Scroll the history
+into view first, then modifier-drag to copy from it.
+
 ## Using the web client
 
 Mobile-first mirror of the TUI: session list (tap to attach, ✕ to kill, new
