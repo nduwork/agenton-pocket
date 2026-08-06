@@ -61,7 +61,11 @@ lists the sessions it will kill first.
 ## Conventions
 
 - Use Conventional Commit messages — release-please builds the changelog and
-  version bumps from them.
+  version bumps from them. Don't hand-edit `CHANGELOG.md`.
+- Update docs in the same change that alters behavior. If you add/rename/remove
+  a CLI command or flag, or change what a mode does, update `README.md` (the
+  Quickstart, Modes, and `## Commands` list) and `agenton help`/`up -h` usage
+  text to match. A behavior change with stale docs is an incomplete change.
 - Contributions are accepted under the CLA in `.github/CONTRIBUTING.md`. The
   daemon + web source is GPL-3.0; anyone can build and run the app in the iOS
   Simulator with no Apple account. App Store / signed builds are the copyright

@@ -115,6 +115,44 @@ func serveApp(handler http.Handler) {
 	log.Printf("agenton: serve ended: %v", http.Serve(ln, handler))
 }
 
+// serveLan binds every interface on :9787 so devices on the same local network
+// can reach it, and publishes this machine's LAN IPv4 as the endpoint — so `qr`
+// and `up` hand the phone a reachable address, not 127.0.0.1. agenton serves
+// plain HTTP; in this mode the local network is the security boundary.
+//
+// ponytail: like tailnet↔localhost, switching an already-running web into/out of
+// lan mode still needs a `pkill -f 'agenton web'` first — a live web on :9787 is
+// treated as ready regardless of which mode it's in (see ensureWeb).
+func serveLan(handler http.Handler) {
+	ip, err := lanIP()
+	if err != nil {
+		log.Printf("agenton: could not determine LAN IP (%v); serving localhost only.", err)
+		serveLocal(handler)
+		return
+	}
+	ln, err := net.Listen("tcp", ":9787")
+	if err != nil {
+		log.Fatalf("agenton: cannot bind :9787: %v", err)
+	}
+	// Write tailnet.json only after a successful bind, so its presence is a real
+	// liveness signal for `up`/`qr` (not a stale file from a dead run).
+	_ = writeTailnetInfo(tailnetInfo{Host: ip, Port: 9787})
+	log.Printf("agenton: serving http://%s:9787 on the local network", ip)
+	log.Printf("agenton: serve ended: %v", http.Serve(ln, handler))
+}
+
+// lanIP returns this machine's primary outbound IPv4 (the address other devices
+// on the LAN reach it at). The UDP "dial" sends no packets — it just makes the
+// kernel pick the source IP for that route.
+func lanIP() (string, error) {
+	c, err := net.Dial("udp", "8.8.8.8:80")
+	if err != nil {
+		return "", err
+	}
+	defer c.Close()
+	return c.LocalAddr().(*net.UDPAddr).IP.String(), nil
+}
+
 // serveLocal binds localhost only — the tailnet-mode fallback when there's no
 // reachable tailnet. No tailnet.json is written.
 func serveLocal(handler http.Handler) {

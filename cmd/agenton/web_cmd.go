@@ -16,13 +16,16 @@ func runWeb(args []string) {
 	mode := flagValue(args, "-mode", "tailnet")
 	handler := web.Handler(sock)
 
-	if mode == "tailnet" {
+	switch {
+	case mode == "tailnet":
 		serveApp(handler) // owns its own listen address; blocks
-		return
-	}
-	listen := flagValue(args, "-listen", defaultWebAddr)
-	log.Printf("agenton web on http://%s (daemon socket: %s)", listen, sock)
-	if err := http.ListenAndServe(listen, handler); err != nil {
-		log.Fatal(err)
+	case mode == "lan" && !hasFlag(args, "-listen"):
+		serveLan(handler) // binds all interfaces, publishes the LAN IP; blocks
+	default:
+		listen := flagValue(args, "-listen", defaultWebAddr)
+		log.Printf("agenton web on http://%s (daemon socket: %s)", listen, sock)
+		if err := http.ListenAndServe(listen, handler); err != nil {
+			log.Fatal(err)
+		}
 	}
 }
