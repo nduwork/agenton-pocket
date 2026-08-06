@@ -1,3 +1,7 @@
+<!-- Title format (CI-enforced): type(optional-scope): summary
+     types: feat fix docs style refactor perf test build ci chore revert
+     The squash-merge title is the commit release-please versions from. -->
+
 ## What & why
 
 Describe the change and the motivation.
