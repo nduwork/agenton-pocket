@@ -138,12 +138,12 @@ and custom-key rebinding live on the phone/web clients, where there's no
 physical keyboard to type with.
 
 **Scrolling & copying.** Mouse-wheel up/down pages through session history — at
-a shell you scroll agenton's scrollback (a `SCROLLBACK ↑N` marker shows in the
+a shell you scroll agenton's scrollback (a `SCROLLBACK up N` marker shows in the
 top bar; press any key to jump back to live), and inside `claude`/`codex` the
 wheel scrolls their own view. To **select and copy** text, hold your terminal's
-selection modifier and drag — **⌥ (Option)+drag** in iTerm2/Ghostty, **⇧
-(Shift)+drag** in most Linux terminals and macOS Terminal. Scroll the history
-into view first, then modifier-drag to copy from it.
+selection modifier and drag — **Option+drag** in iTerm2/Ghostty, **Shift+drag**
+in most Linux terminals and macOS Terminal. Scroll the history into view first,
+then modifier-drag to copy from it.
 
 ## Using the web client
 

@@ -1,7 +1,6 @@
 package tui
 
 import (
-	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -600,12 +599,10 @@ func (m *sessionModel) renderParked() string {
 var hintBarStyle = lipgloss.NewStyle().Reverse(true)
 
 func (m *sessionModel) hintBar() string {
-	// ⌥/⇧-drag is the host terminal's own selection (it bypasses our mouse
-	// capture); agenton just names it here since the capture hides that it works.
-	bar := " ctrl+t → switch sessions   ·   ⌥/⇧-drag → copy"
-	if m.scrollTop > 0 {
-		bar = " SCROLLBACK ↑" + strconv.Itoa(m.scrollTop) + "   ·   any key → live   ·   ⌥/⇧-drag → copy"
-	}
+	// Option/Shift-drag is the host terminal's own selection (it bypasses our
+	// mouse capture); agenton just names it here since the capture hides that it
+	// works.
+	bar := " ctrl+t → switch sessions   ·   Option/Shift-drag → copy"
 	if m.width > 0 {
 		return hintBarStyle.Width(m.width).MaxWidth(m.width).Render(bar)
 	}
