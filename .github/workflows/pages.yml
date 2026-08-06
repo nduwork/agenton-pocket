@@ -1,0 +1,40 @@
+name: pages
+
+# Deploys docs/ to GitHub Pages from a workflow we own, replacing the
+# GitHub-managed "pages build and deployment" (Pages source must be set to
+# "GitHub Actions" in Settings → Pages). The managed workflow's action
+# versions can't be pinned or re-run on our terms; this one can, and
+# workflow_dispatch gives a manual retry when a deployment stalls.
+# docs/ is plain static HTML — no Jekyll pass needed.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; a newer push supersedes a queued one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: docs
+      - id: deploy
+        uses: actions/deploy-pages@v5
