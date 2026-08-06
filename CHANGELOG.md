@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.2.0](https://github.com/nduwork/agenton-pocket/compare/v0.1.2...v0.2.0) (2026-08-06)
+
+
+### Features
+
+* **cli:** `vpn` / `lan` start subcommands; bare `agenton` resumes the running session; starting is refused while a daemon is already up so the reach never changes mid-run ([#23](https://github.com/nduwork/agenton-pocket/pull/23))
+* **tui:** mouse-wheel scrollback pager at a shell (any key snaps back to live; the wheel still forwards inside claude/codex), with an Option/Shift+drag copy hint ([#23](https://github.com/nduwork/agenton-pocket/pull/23))
+
+
+### Bug Fixes
+
+* **tui:** copy scrolled cells under one emulator lock to fix a render-path data race; keep the response drain alive on write errors to avoid a TUI hang; send arrow keys instead of paging over alt-screen apps (less/man) ([#23](https://github.com/nduwork/agenton-pocket/pull/23))
+* **cli:** record the web's reach so `vpn` never silently adopts a surviving LAN web, and allow a dead web to be restarted behind a live daemon without ending sessions ([#23](https://github.com/nduwork/agenton-pocket/pull/23))
+
 ## [0.1.2](https://github.com/nduwork/agenton-pocket/compare/v0.1.1...v0.1.2) (2026-08-06)
 
 
