@@ -35,9 +35,56 @@ func TestVTEmuRendersTextAndTracksMouseMode(t *testing.T) {
 func TestVTEmuMouseModeOffByDefault(t *testing.T) {
 	e := newVTEmu(20, 3, strings.NewReader("plain text"), io.Discard)
 	defer e.Close()
-	waitUntil(t, func() bool { return strings.Contains(e.GetScreen().Rows[0], "plain") })
+	if !waitUntil(t, func() bool { return strings.Contains(e.GetScreen().Rows[0], "plain") }) {
+		t.Fatal("emulator never rendered the input")
+	}
 	if e.MouseTrackingOn() {
 		t.Fatal("MouseTrackingOn true with no tracking sequence")
+	}
+}
+
+// chunkReader hands out one chunk per Read, so escape sequences can be forced
+// to straddle read boundaries.
+type chunkReader struct{ chunks []string }
+
+func (r *chunkReader) Read(p []byte) (int, error) {
+	if len(r.chunks) == 0 {
+		return 0, io.EOF
+	}
+	n := copy(p, r.chunks[0])
+	r.chunks = r.chunks[1:]
+	return n, nil
+}
+
+// Mode tracking rides the vt parser, so a mode sequence split across read
+// chunks must still register — the old byte-rescan missed those, misrouting
+// the wheel for the rest of the session.
+func TestVTEmuTracksModeSplitAcrossChunks(t *testing.T) {
+	e := newVTEmu(20, 3, &chunkReader{chunks: []string{"\x1b[?10", "02h"}}, io.Discard)
+	defer e.Close()
+	if !waitUntil(t, e.MouseTrackingOn) {
+		t.Fatal("split ?1002h did not enable mouse tracking")
+	}
+
+	e2 := newVTEmu(20, 3, &chunkReader{chunks: []string{"\x1b[?1002h", "\x1b[?100", "2l"}}, io.Discard)
+	defer e2.Close()
+	if !waitUntil(t, func() bool { return !e2.MouseTrackingOn() }) {
+		t.Fatal("split ?1002l did not disable mouse tracking")
+	}
+}
+
+func TestVTEmuResizeReshapesScreen(t *testing.T) {
+	e := newVTEmu(20, 3, strings.NewReader("hello"), io.Discard)
+	defer e.Close()
+	if !waitUntil(t, func() bool { return strings.Contains(e.GetScreen().Rows[0], "hello") }) {
+		t.Fatal("emulator never rendered the input")
+	}
+	if err := e.Resize(40, 5); err != nil {
+		t.Fatalf("Resize: %v", err)
+	}
+	rows := e.GetScreen().Rows
+	if len(rows) != 5 {
+		t.Fatalf("after Resize: %d rows, want 5", len(rows))
 	}
 }
 

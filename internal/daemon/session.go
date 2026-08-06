@@ -23,8 +23,9 @@ import (
 
 // emuScrollback is the depth of the daemon-side emulator's history. It bounds
 // how much transcript a fresh attach can replay ("view all contents"), and the
-// per-session memory the emulator holds.
-const emuScrollback = 10000
+// per-session memory the emulator holds. Shared with the TUI pager so both
+// sides retain the same depth.
+const emuScrollback = vtmode.ScrollbackLines
 
 // subBuffer is the per-subscriber channel depth. Full-screen agent redraws
 // arrive as bursts of 4 KiB chunks; a deep buffer keeps a briefly-stalled
@@ -727,7 +728,7 @@ func envList(m map[string]string) []string {
 
 // inheritedSessionMarkers are env vars that identify the *launching* Claude Code
 // session. The daemon is long-lived and is often started from inside one (e.g.
-// `agenton up` run in a Claude Code shell), and every PTY it spawns inherits its
+// `agenton vpn` run in a Claude Code shell), and every PTY it spawns inherits its
 // environment — so without stripping these, a `claude` started in any agenton
 // session would think it is a child of whatever launched the daemon: it disables
 // transcript saving ("Transcript saving is off — inherited

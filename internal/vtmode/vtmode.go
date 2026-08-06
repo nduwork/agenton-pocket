@@ -8,6 +8,10 @@ import (
 	"strings"
 )
 
+// ScrollbackLines is the emulator history depth, shared so the desktop TUI's
+// pager can page back through exactly what the daemon-side emulator retains.
+const ScrollbackLines = 10000
+
 // UpdatePrivateModes scans b for DEC private-mode set/reset sequences
 // (ESC [ ? params h/l) and applies them to modes: set on 'h', delete on 'l'. A
 // sequence split across chunks won't match; that's rare (escapes are tiny vs.

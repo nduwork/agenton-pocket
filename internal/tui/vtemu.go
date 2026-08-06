@@ -12,15 +12,10 @@ import (
 	"github.com/nduwork/agenton-pocket/internal/vtmode"
 )
 
-// emuScrollback matches the daemon's cap so a desktop attach can page back
-// through the same amount of history the daemon retains.
-const emuScrollback = 10000
-
 type curPos struct{ X, Y int }
-type lineDamage struct{ Row int }
 type frame struct {
-	Rows   []string
-	Damage []lineDamage
+	Rows    []string
+	Changed bool
 }
 
 // vtEmu is a pipe-only terminal emulator: it reads a session's PTY output from
@@ -57,14 +52,30 @@ func newVTEmu(cols, rows int, r io.Reader, w io.Writer) *vtEmu {
 		notifyC:  make(chan struct{}, 1),
 		stopChan: make(chan struct{}),
 	}
-	e.vt.SetScrollbackSize(emuScrollback)
+	e.vt.SetScrollbackSize(vtmode.ScrollbackLines)
+	// Track DEC private modes off the vt's own parser rather than re-scanning
+	// the byte stream: the parser handles sequences split across read chunks,
+	// which a byte scan misses — and a missed ?1002h/l misroutes the wheel.
+	// Callbacks fire inside vt.Write, which only runs under mu (readLoop).
+	e.vt.SetCallbacks(vt.Callbacks{
+		EnableMode: func(m ansi.Mode) {
+			if dm, ok := m.(ansi.DECMode); ok {
+				e.modes[int(dm)] = true
+			}
+		},
+		DisableMode: func(m ansi.Mode) {
+			if dm, ok := m.(ansi.DECMode); ok {
+				delete(e.modes, int(dm))
+			}
+		},
+	})
 	go e.responseLoop()
 	go e.readLoop(r)
 	return e
 }
 
-// readLoop feeds child output into the emulator and scans it for DEC private
-// modes. Same structure as bubbleterm's ptyReadLoop, plus the mode scan.
+// readLoop feeds child output into the emulator. Same structure as
+// bubbleterm's ptyReadLoop.
 func (e *vtEmu) readLoop(r io.Reader) {
 	buf := make([]byte, 4096)
 	for {
@@ -77,7 +88,6 @@ func (e *vtEmu) readLoop(r io.Reader) {
 		if n > 0 {
 			e.mu.Lock()
 			e.vt.Write(buf[:n])
-			vtmode.UpdatePrivateModes(buf[:n], e.modes)
 			e.markDamagedLocked()
 			e.mu.Unlock()
 		}
@@ -89,9 +99,11 @@ func (e *vtEmu) readLoop(r io.Reader) {
 
 // responseLoop drains the vt emulator's generated responses to the child. The
 // vt writes these to a synchronous pipe, so NOT draining them blocks the read
-// loop under mu and freezes the terminal — identical to bubbleterm's behavior.
+// loop under mu and freezes the terminal — which is also why a write error
+// must not end the drain: keep reading and drop the bytes instead.
 func (e *vtEmu) responseLoop() {
 	buf := make([]byte, 4096)
+	w := e.writer
 	for {
 		select {
 		case <-e.stopChan:
@@ -99,9 +111,9 @@ func (e *vtEmu) responseLoop() {
 		default:
 		}
 		n, err := e.vt.Read(buf)
-		if n > 0 && e.writer != nil {
-			if _, werr := e.writer.Write(buf[:n]); werr != nil {
-				return
+		if n > 0 && w != nil {
+			if _, werr := w.Write(buf[:n]); werr != nil {
+				w = nil // connection gone: keep draining so vt.Write never blocks
 			}
 		}
 		if err != nil {
@@ -123,14 +135,22 @@ func (e *vtEmu) Done() <-chan struct{}          { return e.stopChan }
 
 // Close stops the loops. Like bubbleterm, it does NOT call vt.Close(): the vt
 // emulator does not synchronize Close with Read/Write, and closing the pipe
-// endpoints (reader.stop / client.Close in sessionModel.Close) ends the I/O.
+// endpoints (reader.stop / client.Close in sessionModel.Close) ends the read
+// loop. responseLoop stays parked in vt.Read — an accepted per-attach leak
+// until x/vt grows a race-safe Close — so drop the scrollback here to keep
+// what it pins small.
 func (e *vtEmu) Close() error {
-	e.closeOnce.Do(func() { close(e.stopChan) })
+	e.closeOnce.Do(func() {
+		close(e.stopChan)
+		e.mu.Lock()
+		e.vt.ClearScrollback()
+		e.mu.Unlock()
+	})
 	return nil
 }
 
-// GetScreen renders the current screen; Damage is non-empty when the frame
-// changed since the last call (the TUI keys re-render off len(Damage) > 0).
+// GetScreen renders the current screen; Changed reports whether the frame
+// differs from the previous call (the TUI keys re-render off it).
 func (e *vtEmu) GetScreen() frame {
 	e.mu.Lock()
 	defer e.mu.Unlock()
@@ -139,17 +159,13 @@ func (e *vtEmu) GetScreen() frame {
 	}
 	rendered := e.vt.Render()
 	e.damaged = false
-	var damage []lineDamage
-	if rendered != e.lastRender {
-		damage = make([]lineDamage, e.height)
-		for y := 0; y < e.height; y++ {
-			damage[y] = lineDamage{Row: y}
-		}
+	changed := rendered != e.lastRender
+	if changed {
 		e.lastRender = rendered
 	}
 	rows := splitIntoRows(rendered, e.height, e.width)
 	e.lastRows = rows
-	return frame{Rows: rows, Damage: damage}
+	return frame{Rows: rows, Changed: changed}
 }
 
 func (e *vtEmu) Cursor() (curPos, bool) {
@@ -193,20 +209,43 @@ func (e *vtEmu) ScrollbackLen() int {
 	return e.vt.ScrollbackLen()
 }
 
-func (e *vtEmu) ScrollbackCellAt(x, y int) *uv.Cell {
+// ScrolledView copies the nRows-row window whose top sits scrollTop lines
+// above the live bottom — the full content being [scrollback, screen] — in a
+// single lock hold. Cells are copied by value: x/vt's CellAt/ScrollbackCellAt
+// return pointers into buffers the read loop keeps mutating, so handing those
+// out would race once the lock is released. Rows past either end come back as
+// blanks. Returns the rows and scrollTop re-clamped to the current history.
+func (e *vtEmu) ScrolledView(scrollTop, nRows int) ([][]uv.Cell, int) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
-	return e.vt.ScrollbackCellAt(x, y)
+	sbLen := e.vt.ScrollbackLen()
+	if scrollTop > sbLen {
+		scrollTop = sbLen
+	}
+	w, h := e.vt.Width(), e.vt.Height()
+	base := sbLen - scrollTop // absolute index of the top visible line
+	rows := make([][]uv.Cell, nRows)
+	for r := range rows {
+		abs := base + r
+		row := make([]uv.Cell, w)
+		for x := 0; x < w; x++ {
+			var c *uv.Cell
+			switch {
+			case abs >= 0 && abs < sbLen:
+				c = e.vt.ScrollbackCellAt(x, abs)
+			case abs >= sbLen && abs < sbLen+h:
+				c = e.vt.CellAt(x, abs-sbLen)
+			}
+			if c != nil {
+				row[x] = *c
+			} else {
+				row[x] = uv.EmptyCell
+			}
+		}
+		rows[r] = row
+	}
+	return rows, scrollTop
 }
-
-func (e *vtEmu) CellAt(x, y int) *uv.Cell {
-	e.mu.Lock()
-	defer e.mu.Unlock()
-	return e.vt.CellAt(x, y)
-}
-
-func (e *vtEmu) Width() int  { e.mu.Lock(); defer e.mu.Unlock(); return e.vt.Width() }
-func (e *vtEmu) Height() int { e.mu.Lock(); defer e.mu.Unlock(); return e.vt.Height() }
 
 // splitIntoRows / padRow port bubbleterm's screen slicing: exactly height rows,
 // each padded to width with an SGR reset before the padding so styles don't

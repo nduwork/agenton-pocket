@@ -8,6 +8,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	uv "github.com/charmbracelet/ultraviolet"
+	"github.com/charmbracelet/x/ansi"
 	"github.com/charmbracelet/x/vt"
 
 	"github.com/nduwork/agenton-pocket/internal/client"
@@ -45,8 +46,11 @@ type sessionModel struct {
 	// scrollTop is the absolute scrollback offset of the top visible row: 0 is
 	// the live bottom, N pages N lines up into history. Only used when the agent
 	// hasn't enabled mouse tracking (a shell); claude/codex get the wheel forwarded
-	// and scroll their own view instead.
+	// and scroll their own view instead. lastSbLen is the scrollback depth last
+	// observed while paging; pinScroll uses its growth to keep the view anchored
+	// to content as new output arrives.
 	scrollTop int
+	lastSbLen int
 
 	// inputCh serializes all outbound input (keystrokes, take-over claims) so it
 	// reaches the daemon PTY in the order typed. Bubble Tea runs every returned
@@ -184,7 +188,7 @@ func waitForDamage(emu *vtEmu) tea.Cmd {
 	return func() tea.Msg {
 		// Surface any damage that arrived before we armed (e.g. the initial
 		// frame produced by Resize) without blocking.
-		if f := emu.GetScreen(); len(f.Damage) > 0 {
+		if f := emu.GetScreen(); f.Changed {
 			return renderTickMsg{}
 		}
 		select {
@@ -318,13 +322,32 @@ func (m *sessionModel) handleWheel(msg tea.MouseMsg) (*sessionModel, tea.Cmd) {
 		m.enqueue(func() { _ = emu.SendMouseWheel(button, x, y) })
 		return m, nil
 	}
+	// Full-screen apps that never enable mouse reporting (less, man, vim
+	// without mouse) own the whole screen, and their alt screen has no
+	// scrollback — paging the main screen's history over them would splice
+	// unrelated content into the view. Do what xterm's alternate-scroll mode
+	// does instead: turn each wheel notch into arrow keys.
+	if m.emu.IsAltScreen() {
+		key := "\x1b[A"
+		if button == int(vt.MouseWheelDown) {
+			key = "\x1b[B"
+		}
+		payload := strings.Repeat(key, 3) // match the pager's rows per notch
+		c, id := m.client, m.id
+		m.enqueue(func() { _ = c.TextInput(id, payload) })
+		return m, nil
+	}
 	// Otherwise page our own scrollback (shell, or any non-mouse program).
+	// No command needed: Bubble Tea re-renders View after every Update, and
+	// returning a synthetic renderTickMsg would arm an extra waitForDamage
+	// waiter per notch that parks until the next damage.
 	delta := 3 // rows per wheel notch
 	if button == int(vt.MouseWheelDown) {
 		delta = -delta
 	}
-	m.scrollTop = clampScrollTop(m.scrollTop, delta, m.emu.ScrollbackLen())
-	return m, func() tea.Msg { return renderTickMsg{} }
+	m.pinScroll(m.emu.ScrollbackLen())
+	m.scrollTop = clampScrollTop(m.scrollTop, delta, m.lastSbLen)
+	return m, nil
 }
 
 // clampScrollTop applies a wheel delta (positive = scroll up into history) to
@@ -339,6 +362,22 @@ func clampScrollTop(cur, delta, max int) int {
 		n = max
 	}
 	return n
+}
+
+// pinScroll keeps a paged view anchored to what the reader is looking at:
+// every line the shell emits while scrolled grows the scrollback, which would
+// otherwise slide history past the viewport (base = sbLen - scrollTop).
+// ponytail: anchors by bottom-distance, so once scrollback hits its cap (old
+// lines shift out instead of sbLen growing) the view drifts again; a true fix
+// needs an absolute line counter from the emulator.
+func (m *sessionModel) pinScroll(sbLen int) {
+	if m.scrollTop > 0 && sbLen > m.lastSbLen {
+		m.scrollTop += sbLen - m.lastSbLen
+		if m.scrollTop > sbLen {
+			m.scrollTop = sbLen
+		}
+	}
+	m.lastSbLen = sbLen
 }
 
 // wheelButton maps a Bubble Tea wheel button to the vt mouse-button code the
@@ -458,42 +497,25 @@ func (m *sessionModel) renderTerminal() string {
 // the live view is its last termRows; scrollTop lifts that window up by N lines.
 // No cursor is spliced — the caret is meaningless while paused in history.
 func (m *sessionModel) renderScrolled() string {
-	sbLen := m.emu.ScrollbackLen()
-	w, h := m.emu.Width(), m.emu.Height()
-	if m.scrollTop > sbLen {
-		m.scrollTop = sbLen
-	}
-	base := sbLen - m.scrollTop // absolute index of the top visible line
-	rows := make([]string, m.termRows)
-	for r := 0; r < m.termRows; r++ {
-		abs := base + r
-		switch {
-		case abs < 0 || abs >= sbLen+h:
-			rows[r] = strings.Repeat(" ", w)
-		case abs < sbLen:
-			y := abs
-			rows[r] = styledRow(func(x int) *uv.Cell { return m.emu.ScrollbackCellAt(x, y) }, w)
-		default:
-			y := abs - sbLen
-			rows[r] = styledRow(func(x int) *uv.Cell { return m.emu.CellAt(x, y) }, w)
-		}
+	m.pinScroll(m.emu.ScrollbackLen())
+	cellRows, top := m.emu.ScrolledView(m.scrollTop, m.termRows)
+	m.scrollTop = top
+	rows := make([]string, len(cellRows))
+	for r, cells := range cellRows {
+		rows[r] = styledRow(cells)
 	}
 	return m.hintBar() + "\n" + strings.Join(rows, "\n")
 }
 
 // styledRow renders one row of cells to ANSI: SGR transitions between cells,
 // grapheme content verbatim, and a trailing reset so style never leaks. Mirrors
-// the daemon's replay writeCells. nil/empty cells print as spaces to hold columns.
-func styledRow(cell func(x int) *uv.Cell, w int) string {
+// the daemon's replay writeCells. Empty cells print as spaces to hold columns.
+func styledRow(cells []uv.Cell) string {
 	var b strings.Builder
 	cur := uv.Style{}
 	styled := false
-	for x := 0; x < w; x++ {
-		c := cell(x)
-		if c == nil {
-			b.WriteByte(' ')
-			continue
-		}
+	for i := range cells {
+		c := &cells[i]
 		if c.Width == 0 && c.Content == "" {
 			continue // zero-width shadow of a preceding wide grapheme
 		}
@@ -604,6 +626,9 @@ func (m *sessionModel) hintBar() string {
 	// works.
 	bar := " ctrl+t → switch sessions   ·   Option/Shift+mouse drag to select text"
 	if m.width > 0 {
+		// Truncate before styling: hintHeight budgets exactly one row, and
+		// lipgloss Width() wraps overlong content, pushing the PTY off-screen.
+		bar = ansi.Truncate(bar, m.width, "")
 		return hintBarStyle.Width(m.width).MaxWidth(m.width).Render(bar)
 	}
 	return bar
