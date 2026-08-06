@@ -602,7 +602,7 @@ func (m *sessionModel) hintBar() string {
 	// Option/Shift-drag is the host terminal's own selection (it bypasses our
 	// mouse capture); agenton just names it here since the capture hides that it
 	// works.
-	bar := " ctrl+t → switch sessions   ·   Option/Shift-drag → copy"
+	bar := " ctrl+t → switch sessions   ·   Option/Shift+mouse drag to select text"
 	if m.width > 0 {
 		return hintBarStyle.Width(m.width).MaxWidth(m.width).Render(bar)
 	}
