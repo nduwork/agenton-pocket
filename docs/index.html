@@ -444,7 +444,7 @@
         <div class="cmd"><span class="pmt">$</span><span id="cmd">curl -fsSL https://raw.githubusercontent.com/nduwork/agenton-pocket/main/install.sh | bash</span></div>
         <button id="copy" aria-label="Copy install command">copy</button>
       </div>
-      <p class="subcmds">then <span style="color:var(--cyan)">agenton</span> — daemon + TUI, all at once · <a href="https://github.com/nduwork/agenton-pocket">view source&nbsp;↗</a></p>
+      <p class="subcmds">then <span style="color:var(--cyan)">agenton vpn</span> — daemon + web + TUI over your tailnet <b>(<span style="color:var(--cyan)">agenton lan</span> for same-Wi-Fi)</b> · <a href="https://github.com/nduwork/agenton-pocket">view source&nbsp;↗</a></p>
     </div>
 
     <div class="win rv" aria-hidden="true">
@@ -638,7 +638,7 @@
       <div class="card rv">
         <span class="ic">desk</span>
         <h3>Terminal, at the desk</h3>
-        <p>A minimal TUI wrapper. Type straight to the agent; the only extra is session switching with <span class="mono" style="color:var(--cyan)">ctrl+t</span>.</p>
+        <p>A minimal TUI wrapper. Type straight to the agent; the wheel pages session history, and the only reserved key is <span class="mono" style="color:var(--cyan)">ctrl+t</span> to switch sessions.</p>
       </div>
       <div class="card rv">
         <span class="ic">pocket</span>
@@ -691,12 +691,12 @@
       <div class="txt">
         <div class="num"><span class="line"></span>02 &nbsp; attached</div>
         <h3>A full raw terminal, no chrome</h3>
-        <p>Attach and every keystroke goes straight to the agent's PTY — exactly as if you'd launched it right here. Scrollback replays instantly on reattach.</p>
+        <p>Attach and every keystroke goes straight to the agent's PTY — exactly as if you'd launched it right here. Scrollback replays instantly on reattach, and the mouse wheel pages through history at a shell (inside claude/codex it scrolls their own view); any key snaps back to live.</p>
         <p class="note"><b>ctrl+t</b> is the one reserved key: it pops back to the list and doubles as detach. The session keeps running.</p>
       </div>
       <div class="shot-tui">
         <div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
-        <div class="cc" aria-label="Attached agenton session showing a Claude Code transcript adding retry with backoff to a webhook sender and running tests"><span class="hint">ctrl+t → switch sessions</span>
+        <div class="cc" aria-label="Attached agenton session showing a Claude Code transcript adding retry with backoff to a webhook sender and running tests"><span class="hint">ctrl+t → switch sessions&nbsp;&nbsp;·&nbsp;&nbsp;Option/Shift+mouse drag to select text</span>
 <div class="box"><span class="star">✻</span> Welcome to Claude Code!
 
   /help for help, /status for your current setup
@@ -730,7 +730,7 @@
       <div class="shot-tui">
         <div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
         <div class="cc frozen" aria-label="Desk TUI frozen while a phone drives the session, showing a press-any-key takeover hint">
-<div class="fz"><span class="hint">ctrl+t → switch sessions</span>
+<div class="fz"><span class="hint">ctrl+t → switch sessions&nbsp;&nbsp;·&nbsp;&nbsp;Option/Shift+mouse drag to select text</span>
 
 <span class="a"><span class="dot">●</span> I'll add jittered exponential backoff to the webhook sender.</span>
 
@@ -758,7 +758,7 @@
       <div class="feat"><h3><span class="k">◉</span> Press-to-talk</h3><p>Hold the mic in the message bar and dictate — on-device speech drops the transcript in to review, then send. Skip thumb-typing long prompts.</p></div>
       <div class="feat"><h3><span class="k">⚿</span> Tailnet is the auth</h3><p>agenton rides the Tailscale app you already run — no extra node to approve, free plan is fine. Only devices on your tailnet can reach it — that's the whole model.</p></div>
       <div class="feat"><h3><span class="k">▦</span> Scan to pair</h3><p><span class="mono">agenton qr</span> prints a code; the iOS app reads it and you're connected. No IP addresses, no typing.</p></div>
-      <div class="feat"><h3><span class="k">◇</span> One-command install</h3><p><span class="mono">./install.sh</span> fetches a prebuilt release (or builds from source if Go's present) and puts one small binary on your PATH — no daemon to configure. Then <span class="mono">agenton</span>.</p></div>
+      <div class="feat"><h3><span class="k">◇</span> One-command install</h3><p><span class="mono">./install.sh</span> fetches a prebuilt release (or builds from source if Go's present) and puts one small binary on your PATH — no daemon to configure. Then <span class="mono">agenton vpn</span>.</p></div>
       <div class="feat"><h3><span class="k">⤾</span> Take it to go</h3><p>Get up mid-run and the same session flips to the pocket controller — nothing stops, nothing reconnects. Land back at the desk and pick up where you left off.</p></div>
     </div>
   </div>
