@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/nduwork/agenton-pocket/compare/v0.1.2...v0.1.3) (2026-08-07)
+
+
+### Bug Fixes
+
+* restore MIT attribution on vendored xterm.js assets ([#34](https://github.com/nduwork/agenton-pocket/issues/34)) ([6dd82dc](https://github.com/nduwork/agenton-pocket/commit/6dd82dca66394565d9cb6f7dd27663382dec9692))
+
 ## [0.1.2](https://github.com/nduwork/agenton-pocket/compare/v0.1.1...v0.1.2) (2026-08-06)
 
 
