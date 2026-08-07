@@ -80,8 +80,15 @@
     color:var(--dim);font-family:var(--mono);font-size:12.5px;padding:0 16px;cursor:pointer;
     transition:color .15s,background .15s}
   .install button:hover{color:var(--cyan);background:#1d222c}
-  .subcmds{font-family:var(--mono);font-size:13px;color:var(--faint);margin:16px 0 0}
+  .subcmds{font-family:var(--mono);font-size:13px;color:var(--faint);margin:14px 0 0}
   .subcmds b{color:var(--dim);font-weight:400}
+  /* two ways to reach your phone — vpn and lan as equals (mirrors the README
+     modes table). Identical cards so neither reads as the "default". */
+  .reach{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0 0;max-width:420px}
+  .reach .m{border:1px solid var(--rule);border-radius:9px;background:var(--panel);padding:11px 13px}
+  .reach .m .cmd{font-family:var(--mono);font-size:13.5px;color:var(--cyan)}
+  .reach .m .d{font-family:var(--mono);font-size:11.5px;color:var(--faint);margin-top:4px;line-height:1.45}
+  @media(max-width:420px){.reach{grid-template-columns:1fr}}
   /* installation lives on the repo — the hero just points there */
   .cta-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
   .cta{display:inline-flex;align-items:center;gap:8px;background:var(--cyan);color:#0b1220;
@@ -444,7 +451,11 @@
         <div class="cmd"><span class="pmt">$</span><span id="cmd">curl -fsSL https://raw.githubusercontent.com/nduwork/agenton-pocket/main/install.sh | bash</span></div>
         <button id="copy" aria-label="Copy install command">copy</button>
       </div>
-      <p class="subcmds">then <span style="color:var(--cyan)">agenton vpn</span> — daemon + web + TUI over your tailnet <b>(<span style="color:var(--cyan)">agenton lan</span> for same-Wi-Fi)</b> · <a href="https://github.com/nduwork/agenton-pocket">view source&nbsp;↗</a></p>
+      <div class="reach" aria-label="two ways to reach your phone">
+        <div class="m"><div class="cmd">agenton vpn</div><div class="d">reach it anywhere<br>Tailscale, free plan</div></div>
+        <div class="m"><div class="cmd">agenton lan</div><div class="d">same Wi-Fi<br>no VPN, zero setup</div></div>
+      </div>
+      <p class="subcmds">either starts the daemon + web + TUI and prints a QR · <a href="https://github.com/nduwork/agenton-pocket">view source&nbsp;↗</a></p>
     </div>
 
     <div class="win rv" aria-hidden="true">

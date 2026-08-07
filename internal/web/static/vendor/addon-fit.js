@@ -1,6 +1,7 @@
 /**
  * Skipped minification because the original files appears to be already minified.
  * Original file: /npm/@xterm/addon-fit@0.10.0/lib/addon-fit.js
+ * License: MIT — Copyright (c) The xterm.js authors; full text in ./LICENSE
  *
  * Do NOT use SRI with dynamically generated files! More information: https://www.jsdelivr.com/using-sri-with-dynamic-files
  */
