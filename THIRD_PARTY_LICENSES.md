@@ -59,6 +59,18 @@ The iOS app (`ios/`) additionally links one Swift package, listed under
 | `rsc.io/qr` | BSD-3-Clause | https://github.com/rsc/qr/blob/v0.2.0/LICENSE |
 | `tailscale.com` | BSD-3-Clause | https://github.com/tailscale/tailscale/blob/v1.100.0/LICENSE |
 
+## Vendored web assets
+
+The browser client embeds vendored copies of the xterm.js project (MIT). The
+jsDelivr-minified files omit the upstream copyright header, so the full
+license is reproduced at `internal/web/static/vendor/LICENSE` and ships
+inside the binary via `go:embed`.
+
+| Package | License | Source |
+|---|---|---|
+| `@xterm/xterm@5.5.0` (xterm.js, xterm.css) | MIT | https://github.com/xtermjs/xterm.js/blob/master/LICENSE |
+| `@xterm/addon-fit@0.10.0` (addon-fit.js) | MIT | https://github.com/xtermjs/xterm.js/blob/master/LICENSE |
+
 ## iOS / Swift dependencies
 
 The SwiftUI app links one third-party Swift package (resolved by SwiftPM):

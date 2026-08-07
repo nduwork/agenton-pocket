@@ -1,6 +1,7 @@
 /**
  * Skipped minification because the original files appears to be already minified.
  * Original file: /npm/@xterm/xterm@5.5.0/lib/xterm.js
+ * License: MIT — Copyright (c) The xterm.js authors; full text in ./LICENSE
  *
  * Do NOT use SRI with dynamically generated files! More information: https://www.jsdelivr.com/using-sri-with-dynamic-files
  */
