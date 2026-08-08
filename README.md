@@ -123,29 +123,18 @@ account can reach the port, and the wire is encrypted for you.
 agenton uses the **system Tailscale app** already on the computer — it registers
 no tailnet node of its own, so there's nothing to approve, no login link, and it
 works on the **free** plan. Install it once on both devices ([Quickstart step
-1](#1-set-up-tailscale-first)).
+1](#1-pick-how-your-phone-reaches-you)).
 
 ### Connect (every day)
 
-    agenton vpn -no-tui   # binds the computer's tailnet IP and prints a connect QR
-
 On the phone, open the agenton iOS app, tap ⚙︎ → **Scan QR**, and scan the block
-it printed. Reprint any time with `agenton qr`.
+`agenton` printed at startup. Reprint any time with `agenton qr`.
 
 **No app?** The server also hosts a web client. Open the printed `http://…`
 URL in any browser on your tailnet, or run `agenton qr --web` for a QR of that
 URL you can scan with the phone's plain **Camera** (it opens straight in the
 browser — no scheme, no app). To make it feel like an app, use the browser's
 Share → **Add to Home Screen** for a full-screen launcher icon.
-
-Modes (pick one when starting):
-- `agenton vpn` — over the tailnet via the system Tailscale app, reachable anywhere.
-- `agenton lan` — over the local network: publishes this machine's LAN IP, so
-  phones/browsers on the same Wi-Fi can reach it. No tailnet.
-
-Once running, bare `agenton` resumes the session and `agenton stop` ends
-everything (daemon, web, all sessions). Starting again is refused while agenton
-is already up, so the reach never changes mid-run.
 
 ## Using the TUI
 
@@ -260,28 +249,3 @@ a Unix socket only and never opens a public port; remote access rides your
 tailnet (the web server binds the machine's tailnet IP, never `0.0.0.0`).
 Sessions persist across detach (daemon-owned PTYs + scrollback ring buffer);
 reattach replays scrollback then streams live output.
-
-## Design docs
-
-The architecture is summarized above (protocol, daemon, transport); phone setup
-is covered under [Phone access](#phone-access-tailscale).
-
-## License
-
-Copyright © 2026 Niu Du. Licensed under GPL-3.0 — see [LICENSE](LICENSE).
-
-All source in this repo — daemon, web, **and** the iOS app (`ios/`) — is free
-software under GPL-3.0; build and run it yourself (the iOS app runs in the
-Simulator with no Apple account). The only thing that isn't the GPL code is the
-**signed App Store binary**: a paid convenience published from the maintainer's
-private signing pipeline. This dual arrangement works because all copyright is
-held by one author; outside contributions are accepted under a
-[CLA](.github/CONTRIBUTING.md) so that right is preserved.
-
-Changes are proposed by **fork and pull request** — fork the repo, push to your
-fork, and open a PR. Direct push access isn't granted; see
-[CONTRIBUTING](.github/CONTRIBUTING.md). The repo is hosted in the
-`nduwork` workspace, but copyright is held by Niu Du personally.
-
-Third-party licenses (bundled Go modules, including the Tailscale client under
-BSD-3-Clause): see [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
