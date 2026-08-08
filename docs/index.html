@@ -10,7 +10,7 @@
     /* Tokyo Night — carried over from the iOS app (Theme.swift) and the web
        client (internal/web/static/style.css) so all three read as one product. */
     --bg:#0f1115; --panel:#161923; --panel2:#1b1f2b; --rule:#262b36;
-    --fg:#d8dee9; --dim:#6b7280; --faint:#565f73;
+    --fg:#d8dee9; --dim:#6b7280; --faint:#565f73; --warn:#f7768e;
     --cyan:#7aa2f7; --green:#9ece6a; --amber:#ff9e64; --iris:#bb9af7; --mag:#bb9af7;
     --mono:ui-monospace,"SF Mono","JetBrains Mono","Menlo",monospace;
     --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Inter",system-ui,sans-serif;
@@ -58,8 +58,8 @@
 
   /* ---------- hero ---------- */
   .hero{padding:76px 0 40px}
-  .hero .wrap{display:grid;grid-template-columns:1.02fr .98fr;gap:56px;align-items:center}
-  @media(max-width:900px){.hero .wrap{grid-template-columns:1fr;gap:40px}.hero{padding:48px 0 24px}}
+  .hero .cols{display:grid;grid-template-columns:1.02fr .98fr;gap:56px;align-items:center}
+  @media(max-width:900px){.hero .cols{grid-template-columns:1fr;gap:40px}.hero{padding:48px 0 24px}}
   .eyebrow{font-family:var(--mono);font-size:12.5px;letter-spacing:.08em;
     text-transform:uppercase;color:var(--cyan);margin:0 0 18px}
   h1{font-family:var(--mono);font-weight:700;font-size:clamp(38px,6.2vw,62px);
@@ -69,22 +69,30 @@
   .lead{font-size:19px;color:var(--dim);max-width:33ch;margin:0 0 30px}
   .lead b{color:var(--fg);font-weight:600}
 
+  /* full-width install line: the whole command is always visible — it wraps on
+     narrow screens instead of clipping or scrolling, so there's nothing hidden */
   .install{display:flex;align-items:stretch;gap:0;border:1px solid var(--rule);
-    border-radius:11px;overflow:hidden;background:var(--panel);max-width:420px}
-  .install .cmd{font-family:var(--mono);font-size:14.5px;padding:13px 16px;flex:1;min-width:0;
-    display:flex;align-items:center;gap:10px;color:var(--fg)}
-  .install .cmd #cmd{white-space:nowrap;overflow-x:auto;scrollbar-width:none}
-  .install .cmd #cmd::-webkit-scrollbar{display:none}
+    border-radius:11px;overflow:hidden;background:var(--panel);margin-top:40px}
+  .install .cmd{font-family:var(--mono);font-size:14.5px;padding:14px 18px;flex:1;min-width:0;
+    display:flex;align-items:baseline;gap:10px;color:var(--fg)}
+  .install .cmd #cmd{white-space:pre-wrap;word-break:break-all}
   .install .cmd .pmt{color:var(--green)}
   .install button{border:0;border-left:1px solid var(--rule);background:var(--panel2);
-    color:var(--dim);font-family:var(--mono);font-size:12.5px;padding:0 16px;cursor:pointer;
+    color:var(--dim);font-family:var(--mono);font-size:12.5px;padding:0 18px;cursor:pointer;
     transition:color .15s,background .15s}
   .install button:hover{color:var(--cyan);background:#1d222c}
   .subcmds{font-family:var(--mono);font-size:13px;color:var(--faint);margin:14px 0 0}
   .subcmds b{color:var(--dim);font-weight:400}
+  /* app store placeholder — becomes a real link when the app ships */
+  .hero-links{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:14px}
+  .appstore{display:inline-flex;align-items:center;gap:10px;border:1px dashed var(--rule);
+    border-radius:10px;padding:9px 15px;font-family:var(--mono);font-size:13px;color:var(--fg)}
+  .appstore .soon{color:var(--amber);font-size:11px;letter-spacing:.05em;text-transform:uppercase;
+    border:1px solid rgba(255,158,100,.35);border-radius:5px;padding:2px 8px}
+  .hero-links .alt{font-family:var(--mono);font-size:12.5px;color:var(--faint)}
   /* two ways to reach your phone — vpn and lan as equals (mirrors the README
      modes table). Identical cards so neither reads as the "default". */
-  .reach{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0 0;max-width:420px}
+  .reach{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0 0;max-width:560px}
   .reach .m{border:1px solid var(--rule);border-radius:9px;background:var(--panel);padding:11px 13px}
   .reach .m .cmd{font-family:var(--mono);font-size:13.5px;color:var(--cyan)}
   .reach .m .d{font-family:var(--mono);font-size:11.5px;color:var(--faint);margin-top:4px;line-height:1.45}
@@ -133,14 +141,25 @@
     letter-spacing:-.03em;margin:0 0 14px;line-height:1.1}
   .sec-lead{color:var(--dim);font-size:17px;max-width:56ch;margin:0 0 40px}
 
-  /* ---------- the pitch ---------- */
-  .story{max-width:64ch}
-  .story p{color:var(--dim);font-size:17px;line-height:1.7;margin:0 0 20px}
-  .story p b{color:var(--fg);font-weight:600}
+  /* ---------- storyboard: the whole product in four cartoon frames ---------- */
+  .comic{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;counter-reset:frame}
+  @media(max-width:980px){.comic{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:520px){.comic{grid-template-columns:1fr}}
+  .panel{border:1px solid var(--rule);border-radius:13px;background:var(--panel);
+    overflow:hidden;margin:0;display:flex;flex-direction:column}
+  .panel svg{display:block;width:100%;height:auto;background:#0f1218}
+  .panel svg text{font-family:var(--mono)}
+  .panel figcaption{padding:14px 16px 16px;border-top:1px solid var(--rule);flex:1}
+  .panel .n{font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--cyan)}
+  .panel h3{font-size:15.5px;letter-spacing:-.015em;margin:7px 0 5px}
+  .panel figcaption p{color:var(--dim);font-size:13px;line-height:1.55;margin:0}
+  .panel figcaption p .m{font-family:var(--mono);color:var(--cyan);font-size:12px}
 
   /* ---------- three ways ---------- */
   .three{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
-  @media(max-width:820px){.three{grid-template-columns:1fr}}
+  .three.why3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:820px){.three,.three.why3{grid-template-columns:1fr}}
   .card{border:1px solid var(--rule);border-radius:13px;background:var(--panel);
     padding:24px;transition:border-color .18s,transform .18s}
   .card:hover{border-color:var(--cyan);transform:translateY(-2px)}
@@ -436,10 +455,10 @@
   <div class="wrap">
     <span class="brand">Agent<span class="on">on</span><span class="dot"></span>&nbsp;Pocket</span>
     <nav>
+      <a class="navlink" href="#story">how it goes</a>
       <a class="navlink" href="#why">why</a>
       <a class="navlink" href="#modes">modes</a>
-      <a class="navlink" href="#switch">switch</a>
-      <a class="navlink" href="#how">how it works</a>
+      <a class="navlink" href="#handoff">handoff</a>
       <a class="navlink" href="#features">features</a>
       <a class="ghbtn" href="https://github.com/nduwork/agenton-pocket">GitHub ↗</a>
     </nav>
@@ -449,19 +468,16 @@
 <!-- HERO -->
 <div class="hero">
   <div class="wrap">
+    <div class="cols">
     <div class="txt">
       <p class="eyebrow">your phone, not a pricey pocket gadget</p>
       <h1>Agent<span class="on">On</span>, <span class="hl">to go.</span></h1>
-      <p class="lead">A dedicated pocket AI-coding device runs hundreds. But your session already lives on your computer — <b>AgentOn</b> just lets the phone in your pocket drive it. Start <b>claude</b> or <b>codex</b> at the desk, walk away, and pick up the same live session on your phone. <b>Free and open source</b> — the web client and the native iOS app both. Tailscale's free plan covers the rest.</p>
-      <div class="install">
-        <div class="cmd"><span class="pmt">$</span><span id="cmd">curl -fsSL https://raw.githubusercontent.com/nduwork/agenton-pocket/main/install.sh | bash</span></div>
-        <button id="copy" aria-label="Copy install command">copy</button>
-      </div>
+      <p class="lead">Start <b>claude</b> or <b>codex</b> at the desk, scan a QR, and the phone in your pocket drives the same live session — from the couch or across town. <b>Free and open source.</b> No cloud in the middle.</p>
       <div class="reach" aria-label="two ways to reach your phone">
         <div class="m"><div class="cmd">agenton vpn</div><div class="d">reach it anywhere<br>Tailscale, free plan</div></div>
         <div class="m"><div class="cmd">agenton lan</div><div class="d">same Wi-Fi<br>no VPN, zero setup</div></div>
       </div>
-      <p class="subcmds">either starts the daemon + web + TUI and prints a QR · <a href="https://github.com/nduwork/agenton-pocket">view source&nbsp;↗</a></p>
+      <p class="subcmds">either starts the daemon + web + TUI and prints a QR</p>
     </div>
 
     <div class="win rv" aria-hidden="true">
@@ -475,19 +491,196 @@
         <div class="keys"><b>[enter]</b> attach&nbsp;&nbsp; <b>[n]</b> new&nbsp;&nbsp; <b>[d]</b> kill&nbsp;&nbsp; <b>[r]</b> refresh&nbsp;&nbsp; <b>[q]</b> quit</div>
       </div>
     </div>
+    </div>
+
+    <div class="install">
+      <div class="cmd"><span class="pmt">$</span><span id="cmd">curl -fsSL https://raw.githubusercontent.com/nduwork/agenton-pocket/main/install.sh | bash</span></div>
+      <button id="copy" aria-label="Copy install command">copy</button>
+    </div>
+    <div class="hero-links">
+      <!-- TODO: when the app ships, swap this span for <a class="appstore" href="APP_STORE_URL"> -->
+      <span class="appstore">iOS app<span class="soon">App Store · coming soon</span></span>
+      <span class="alt">no iPhone? try the web client — Android APK coming soon</span>
+    </div>
   </div>
 </div>
+
+<!-- STORY: the whole thing in four frames -->
+<section id="story">
+  <div class="wrap">
+    <p class="sec-eyebrow">how it goes</p>
+    <h2>Desk to pocket, four frames.</h2>
+    <div class="comic">
+
+      <!-- 01 · start -->
+      <figure class="panel rv">
+        <svg viewBox="0 0 220 150" role="img" aria-label="Cartoon: a person at a desk starts agenton in a terminal on their computer">
+          <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="14" y1="130" x2="206" y2="130" stroke="var(--rule)" stroke-width="2"/>
+            <line x1="88" y1="98" x2="204" y2="98" stroke="var(--dim)" stroke-width="2.5"/>
+            <line x1="98" y1="98" x2="98" y2="130" stroke="var(--dim)" stroke-width="2.5"/>
+            <line x1="194" y1="98" x2="194" y2="130" stroke="var(--dim)" stroke-width="2.5"/>
+            <rect x="116" y="38" width="78" height="48" rx="5" stroke="var(--fg)" stroke-width="2" fill="var(--panel2)"/>
+            <line x1="155" y1="86" x2="155" y2="98" stroke="var(--fg)" stroke-width="2"/>
+            <line x1="143" y1="98" x2="167" y2="98" stroke="var(--fg)" stroke-width="2"/>
+            <text x="123" y="55" font-size="8.5" fill="var(--green)" stroke="none">$</text>
+            <text x="131" y="55" font-size="8.5" fill="var(--cyan)" stroke="none">agenton vpn</text>
+            <line x1="123" y1="64" x2="172" y2="64" stroke="var(--faint)" stroke-width="2"/>
+            <line x1="123" y1="71" x2="158" y2="71" stroke="var(--faint)" stroke-width="2"/>
+            <circle cx="126" cy="79" r="2.6" fill="var(--green)" stroke="none"/>
+            <text x="133" y="82" font-size="7.5" fill="var(--dim)" stroke="none">running</text>
+            <rect x="103" y="93" width="26" height="5" rx="2" stroke="var(--dim)" stroke-width="2"/>
+            <circle cx="58" cy="56" r="8" stroke="var(--fg)" stroke-width="2"/>
+            <path d="M58 64 C56 76 55 86 56 98" stroke="var(--fg)" stroke-width="2"/>
+            <path d="M57 73 L82 84 L103 92" stroke="var(--fg)" stroke-width="2"/>
+            <path d="M56 98 L75 100 L75 128" stroke="var(--fg)" stroke-width="2"/>
+            <path d="M42 66 L42 104 L64 104" stroke="var(--dim)" stroke-width="2.5"/>
+            <line x1="53" y1="104" x2="53" y2="128" stroke="var(--dim)" stroke-width="2.5"/>
+          </g>
+        </svg>
+        <figcaption>
+          <span class="n">01 · start</span>
+          <h3>One command at the desk</h3>
+          <p><span class="m">agenton vpn</span> (or <span class="m">lan</span>) starts the daemon, the web server, and the TUI — and prints a QR on screen.</p>
+        </figcaption>
+      </figure>
+
+      <!-- 02 · pair -->
+      <figure class="panel rv">
+        <svg viewBox="0 0 220 150" role="img" aria-label="Cartoon: a hand holds a phone up to scan a QR code shown on the computer screen">
+          <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="14" y1="130" x2="206" y2="130" stroke="var(--rule)" stroke-width="2"/>
+            <line x1="14" y1="100" x2="118" y2="100" stroke="var(--dim)" stroke-width="2.5"/>
+            <line x1="24" y1="100" x2="24" y2="130" stroke="var(--dim)" stroke-width="2.5"/>
+            <line x1="108" y1="100" x2="108" y2="130" stroke="var(--dim)" stroke-width="2.5"/>
+            <rect x="22" y="30" width="84" height="58" rx="5" stroke="var(--fg)" stroke-width="2" fill="var(--panel2)"/>
+            <line x1="64" y1="88" x2="64" y2="100" stroke="var(--fg)" stroke-width="2"/>
+            <g fill="var(--fg)" stroke="none">
+              <rect x="46" y="41" width="10" height="10" rx="1.5" fill="none" stroke="var(--fg)" stroke-width="2"/>
+              <rect x="72" y="41" width="10" height="10" rx="1.5" fill="none" stroke="var(--fg)" stroke-width="2"/>
+              <rect x="46" y="67" width="10" height="10" rx="1.5" fill="none" stroke="var(--fg)" stroke-width="2"/>
+              <rect x="49" y="44" width="4" height="4"/><rect x="75" y="44" width="4" height="4"/><rect x="49" y="70" width="4" height="4"/>
+              <rect x="61" y="43" width="3.4" height="3.4"/><rect x="66" y="50" width="3.4" height="3.4"/>
+              <rect x="59" y="56" width="3.4" height="3.4"/><rect x="74" y="57" width="3.4" height="3.4"/>
+              <rect x="63" y="63" width="3.4" height="3.4"/><rect x="74" y="70" width="3.4" height="3.4"/>
+              <rect x="66" y="70" width="3.4" height="3.4"/>
+            </g>
+            <line x1="150" y1="58" x2="92" y2="44" stroke="var(--cyan)" stroke-width="1.8" stroke-dasharray="4 5"/>
+            <line x1="150" y1="94" x2="92" y2="82" stroke="var(--cyan)" stroke-width="1.8" stroke-dasharray="4 5"/>
+            <rect x="152" y="44" width="36" height="64" rx="8" stroke="var(--fg)" stroke-width="2" fill="#0a0c10"/>
+            <path d="M160 56 h-3 v6 M180 56 h3 v6 M160 90 h-3 v-6 M180 90 h3 v-6" stroke="var(--cyan)" stroke-width="1.8"/>
+            <circle cx="170" cy="27" r="9" stroke="var(--green)" stroke-width="2"/>
+            <path d="M166 27 l3 3 l6 -6" stroke="var(--green)" stroke-width="2"/>
+            <path d="M158 108 C162 118 180 118 184 108" stroke="var(--fg)" stroke-width="2"/>
+            <path d="M184 112 L204 126" stroke="var(--fg)" stroke-width="2"/>
+          </g>
+        </svg>
+        <figcaption>
+          <span class="n">02 · pair</span>
+          <h3>Scan the code on screen</h3>
+          <p>Point the iOS app at it — or your plain camera for the web client (<span class="m">agenton qr --web</span>). Connected. Nothing to type.</p>
+        </figcaption>
+      </figure>
+
+      <!-- 03 · drive -->
+      <figure class="panel rv">
+        <svg viewBox="0 0 220 150" role="img" aria-label="Cartoon: the phone sits on the desk as a button pad; the person taps its buttons and the session on the big screen reacts">
+          <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="14" y1="130" x2="206" y2="130" stroke="var(--rule)" stroke-width="2"/>
+            <line x1="64" y1="98" x2="204" y2="98" stroke="var(--dim)" stroke-width="2.5"/>
+            <line x1="74" y1="98" x2="74" y2="130" stroke="var(--dim)" stroke-width="2.5"/>
+            <line x1="194" y1="98" x2="194" y2="130" stroke="var(--dim)" stroke-width="2.5"/>
+            <rect x="134" y="40" width="64" height="44" rx="5" stroke="var(--fg)" stroke-width="2" fill="var(--panel2)"/>
+            <line x1="166" y1="84" x2="166" y2="98" stroke="var(--fg)" stroke-width="2"/>
+            <line x1="155" y1="98" x2="177" y2="98" stroke="var(--fg)" stroke-width="2"/>
+            <text x="140" y="56" font-size="7.5" fill="var(--cyan)" stroke="none">❯ run tests</text>
+            <line x1="148" y1="63" x2="168" y2="63" stroke="var(--faint)" stroke-width="2"/>
+            <circle cx="144" cy="73" r="2.4" fill="var(--green)" stroke="none"/>
+            <text x="150" y="76" font-size="7" fill="var(--dim)" stroke="none">running</text>
+            <!-- phone lying on the desk in landscape: a little button-pad gadget -->
+            <rect x="86" y="74" width="38" height="24" rx="4.5" stroke="var(--fg)" stroke-width="2" fill="#0a0c10"/>
+            <g stroke="var(--faint)" stroke-width="1.5">
+              <rect x="90" y="78" width="8" height="7" rx="1.5" stroke="var(--green)"/>
+              <rect x="101" y="78" width="8" height="7" rx="1.5"/>
+              <rect x="112" y="78" width="8" height="7" rx="1.5"/>
+              <rect x="90" y="88" width="8" height="7" rx="1.5"/>
+              <rect x="101" y="88" width="8" height="7" rx="1.5"/>
+              <rect x="112" y="88" width="8" height="7" rx="1.5"/>
+            </g>
+            <!-- tap spark on the highlighted key -->
+            <path d="M92 72 L90 68 M96 72 L97 67 M99 74 L103 71" stroke="var(--cyan)" stroke-width="1.6"/>
+            <!-- person seated, finger on the pad -->
+            <circle cx="40" cy="54" r="8" stroke="var(--fg)" stroke-width="2"/>
+            <path d="M40 62 C38 76 37 86 38 98" stroke="var(--fg)" stroke-width="2"/>
+            <path d="M40 70 L68 82 L91 84" stroke="var(--fg)" stroke-width="2"/>
+            <path d="M38 98 L58 100 L58 128" stroke="var(--fg)" stroke-width="2"/>
+            <path d="M24 64 L24 104 L46 104" stroke="var(--dim)" stroke-width="2.5"/>
+            <line x1="35" y1="104" x2="35" y2="128" stroke="var(--dim)" stroke-width="2.5"/>
+            <!-- control link: pad drives the big screen -->
+            <path d="M126 72 C130 64 132 60 134 56" stroke="var(--cyan)" stroke-width="1.8" stroke-dasharray="4 5"/>
+          </g>
+        </svg>
+        <figcaption>
+          <span class="n">03 · drive</span>
+          <h3>The phone is the desk gadget</h3>
+          <p>Lay it on the desk and it's a button pad for the big screen — accept, reject, arrows, hold-to-talk. Tap a key and the session reacts.</p>
+        </figcaption>
+      </figure>
+
+      <!-- 04 · to go -->
+      <figure class="panel rv">
+        <svg viewBox="0 0 220 150" role="img" aria-label="Cartoon: a person walks away holding their phone, still connected by a dashed line to the session running at home">
+          <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="14" y1="130" x2="206" y2="130" stroke="var(--rule)" stroke-width="2"/>
+            <path d="M18 68 L46 46 L74 68" stroke="var(--dim)" stroke-width="2.5"/>
+            <path d="M26 68 L26 106 L66 106 L66 68" stroke="var(--dim)" stroke-width="2.5"/>
+            <rect x="36" y="78" width="20" height="14" rx="2" stroke="var(--faint)" stroke-width="1.8"/>
+            <circle cx="46" cy="85" r="2.6" fill="var(--green)" stroke="none"/>
+            <path d="M66 60 C100 32 136 36 160 54" stroke="var(--cyan)" stroke-width="1.8" stroke-dasharray="5 6"/>
+            <circle cx="150" cy="48" r="8" stroke="var(--fg)" stroke-width="2"/>
+            <path d="M150 56 L147 90" stroke="var(--fg)" stroke-width="2"/>
+            <path d="M149 64 L166 68" stroke="var(--fg)" stroke-width="2"/>
+            <path d="M149 64 L134 78" stroke="var(--fg)" stroke-width="2"/>
+            <rect x="164" y="58" width="14" height="24" rx="3.5" stroke="var(--fg)" stroke-width="2" fill="#0a0c10"/>
+            <path d="M147 90 L166 108 L170 128" stroke="var(--fg)" stroke-width="2"/>
+            <path d="M147 90 L134 110 L128 128" stroke="var(--fg)" stroke-width="2"/>
+            <line x1="112" y1="58" x2="122" y2="58" stroke="var(--faint)" stroke-width="2"/>
+            <line x1="106" y1="70" x2="118" y2="70" stroke="var(--faint)" stroke-width="2"/>
+            <line x1="112" y1="82" x2="120" y2="82" stroke="var(--faint)" stroke-width="2"/>
+          </g>
+        </svg>
+        <figcaption>
+          <span class="n">04 · to go</span>
+          <h3>Walk out mid-run</h3>
+          <p>Pocket the phone and leave. Over your tailnet the session follows you anywhere — nothing stops, nothing reconnects.</p>
+        </figcaption>
+      </figure>
+
+    </div>
+  </div>
+</section>
 
 <!-- WHY -->
 <section id="why">
   <div class="wrap">
-    <p class="sec-eyebrow">imagine this</p>
+    <p class="sec-eyebrow">why this shape</p>
     <h2>Your agent stays at the desk. You don't.</h2>
-    <div class="story rv">
-      <p>Imagine your agent working through a long build while your phone sits at your desk as a compact gadget — a dedicated controller for the session on your screen. Pick it up and tap once, and it becomes your companion: the same live session follows you to the couch, out the door, anywhere.</p>
-      <p>Your coding agents belong at your desk, inside your security boundary — and that's exactly where AgentOn keeps them. Your phone is an input device, like a keyboard: it sends keystrokes and reads the screen, but the session, the code, the data <b>never leave your computer</b>.</p>
-      <p>Many phone companions mirror a single terminal through a cloud relay. AgentOn is built the other way: a daemon on your computer owns the sessions, so they survive detach, replay full scrollback, run any CLI agent — and hand the same session between your desk gadget and your pocket without reconnecting. Direct over your tailnet or LAN — <b>no cloud in the middle, no public port, no subscription.</b></p>
-      <p>No complex setup — start the daemon, scan a QR code, and AgentOn is to go. Check in from the couch, a jog, or the playground with the kids. Your agent keeps working; you keep an eye on it.</p>
+    <div class="three why3">
+      <div class="card rv">
+        <span class="ic">$0 gadget</span>
+        <h3>Your phone is the device</h3>
+        <p>A dedicated pocket AI gadget runs hundreds of dollars. The phone you already carry does the job — AgentOn just hands it the keys.</p>
+      </div>
+      <div class="card rv">
+        <span class="ic">no cloud</span>
+        <h3>Nothing leaves your computer</h3>
+        <p>The phone sends keystrokes and reads the screen; sessions, code, and credentials stay behind your boundary. Direct over your tailnet or LAN — no relay, no public port, no subscription.</p>
+      </div>
+      <div class="card rv">
+        <span class="ic">daemon</span>
+        <h3>Sessions outlive every screen</h3>
+        <p>A daemon on your computer owns each session, so it survives detach, replays full scrollback, and hands off between desk and phone without reconnecting.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -662,21 +855,8 @@
 <section id="how">
   <div class="wrap">
     <p class="sec-eyebrow">the idea</p>
-    <h2>One daemon. Two ways in.</h2>
-    <p class="sec-lead">Sessions don't live in your terminal — they live in a background daemon. Each client is just a view onto the same running agent, so you can walk away from your desk and pick up on your phone.</p>
-
-    <div class="three">
-      <div class="card rv">
-        <span class="ic">desk</span>
-        <h3>Terminal, at the desk</h3>
-        <p>A minimal TUI wrapper. Type straight to the agent; the wheel pages session history, and the only reserved key is <span class="mono" style="color:var(--cyan)">ctrl+t</span> to switch sessions.</p>
-      </div>
-      <div class="card rv">
-        <span class="ic">pocket</span>
-        <h3>Native app, on your phone</h3>
-        <p>A SwiftUI client speaking the same wire protocol. Native scrollback, haptics, an SF-Symbol button pad, press-to-talk, and QR pairing.</p>
-      </div>
-    </div>
+    <h2>One daemon. Every screen is a view.</h2>
+    <p class="sec-lead">Sessions don't live in your terminal — they live in a background daemon on your computer. The desk TUI and the phone are just views onto the same running agent, so walking away never interrupts anything.</p>
 
     <div class="flow rv">
       <span class="node"><b>claude</b> · <b>codex</b> · <b>shell</b></span>
@@ -689,72 +869,17 @@
   </div>
 </section>
 
-<!-- DEMO -->
-<section id="demo">
+<!-- HANDOFF -->
+<section id="handoff">
   <div class="wrap">
-    <p class="sec-eyebrow">where it starts</p>
-    <h2>At the desk.</h2>
-    <p class="sec-lead">It begins in a minimal terminal wrapper: list your sessions, attach, and type straight to the agent. The phone picks up whatever you start here — the same live session, no reconnecting.</p>
+    <p class="sec-eyebrow">two screens, one session</p>
+    <h2>Hand off cleanly.</h2>
+    <p class="sec-lead">Attach from the desk and the phone at once — one drives, the other watches. Whoever types owns the screen; the other side parks instead of garbling.</p>
 
-    <!-- step 1 -->
     <div class="step rv">
       <div class="txt">
-        <div class="num"><span class="line"></span>01 &nbsp; the session list</div>
-        <h3>Everything running, at a glance</h3>
-        <p>Each row is a live agent: a short repo label, which agent is running inside, and a pulsing <span style="color:var(--green)">running</span> status. Start one with <span class="mono" style="color:var(--cyan)">n</span>, attach with <span class="mono" style="color:var(--cyan)">enter</span>.</p>
-        <p class="note">The list auto-refreshes — a session you start on your phone <b>shows up here on its own.</b></p>
-      </div>
-      <div class="shot-tui">
-        <div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
-        <div class="term" aria-label="agenton TUI session list showing three running sessions: acme-api on Claude, billing-svc on Codex, and dotfiles on Zsh">
-          <div class="title">agenton</div>
-          <hr class="hr">
-          <div class="row sel"><span class="car">▶</span><span class="nm">acme-api</span><span class="ag">Claude</span><span class="st"><span class="d"></span>running</span></div>
-          <div class="row"><span class="id">#2</span><span class="nm">billing-svc</span><span class="ag">Codex</span><span class="st"><span class="d"></span>running</span></div>
-          <div class="row"><span class="id">#3</span><span class="nm">dotfiles</span><span class="ag">Zsh</span><span class="st"><span class="d"></span>running</span></div>
-          <div class="keys"><b>[enter]</b> attach&nbsp;&nbsp; <b>[n]</b> new&nbsp;&nbsp; <b>[d]</b> kill&nbsp;&nbsp; <b>[r]</b> refresh&nbsp;&nbsp; <b>[q]</b> quit</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- step 2 -->
-    <div class="step flip rv">
-      <div class="txt">
-        <div class="num"><span class="line"></span>02 &nbsp; attached</div>
-        <h3>A full raw terminal, no chrome</h3>
-        <p>Attach and every keystroke goes straight to the agent's PTY — exactly as if you'd launched it right here. Scrollback replays instantly on reattach, and the mouse wheel pages through history at a shell (inside claude/codex it scrolls their own view); any key snaps back to live.</p>
-        <p class="note"><b>ctrl+t</b> is the one reserved key: it pops back to the list and doubles as detach. The session keeps running.</p>
-      </div>
-      <div class="shot-tui">
-        <div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
-        <div class="cc" aria-label="Attached agenton session showing a Claude Code transcript adding retry with backoff to a webhook sender and running tests"><span class="hint">ctrl+t → switch sessions&nbsp;&nbsp;·&nbsp;&nbsp;Option/Shift+mouse drag to select text</span>
-<div class="box"><span class="star">✻</span> Welcome to Claude Code!
-
-  /help for help, /status for your current setup
-
-  cwd: ~/projects/acme-api</div><span class="u"><span class="g">&gt;</span> add retry with backoff to the webhook sender, then test</span>
-
-<span class="a"><span class="dot">●</span> I'll add jittered backoff to the webhook sender.</span>
-
-<span class="dot">●</span> Read(internal/webhook/sender.go)
-  <span class="sub">⎿  Read 142 lines</span>
-
-<span class="dot">●</span> Update(internal/webhook/sender.go)
-  <span class="sub">⎿  Added retryWithBackoff · +18 lines</span>
-
-<span class="dot">●</span> Bash(go test ./internal/webhook/...)
-  <span class="sub">⎿  <span class="ok">ok</span>  acme-api/internal/webhook  0.41s</span>
-
-<span class="a"><span class="dot">●</span> Done. Webhook retries 3× with jittered backoff; test added.</span>
-<div class="in"><span class="cur">›</span> </div><span class="sub">? for shortcuts</span></div>
-      </div>
-    </div>
-
-    <!-- step 3 -->
-    <div class="step rv">
-      <div class="txt">
-        <div class="num"><span class="line"></span>03 &nbsp; handing off</div>
-        <h3>The desk is primary — hand off cleanly</h3>
+        <div class="num"><span class="line"></span>the takeover</div>
+        <h3>The desk freezes; the phone drives</h3>
         <p>Drive the same session from your phone and the desk terminal freezes its last frame, showing a takeover hint instead of a garbled, wrong-sized screen. <b>Press any key</b> at the keyboard to grab it back — the phone drops to the Controller pad on its own.</p>
         <p class="note">Sit back down and attach the TUI and the reverse happens: it reclaims the session and <b>the phone parks to Controller automatically.</b></p>
       </div>
