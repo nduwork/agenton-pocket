@@ -133,6 +133,11 @@
     letter-spacing:-.03em;margin:0 0 14px;line-height:1.1}
   .sec-lead{color:var(--dim);font-size:17px;max-width:56ch;margin:0 0 40px}
 
+  /* ---------- the pitch ---------- */
+  .story{max-width:64ch}
+  .story p{color:var(--dim);font-size:17px;line-height:1.7;margin:0 0 20px}
+  .story p b{color:var(--fg);font-weight:600}
+
   /* ---------- three ways ---------- */
   .three{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
   @media(max-width:820px){.three{grid-template-columns:1fr}}
@@ -431,6 +436,7 @@
   <div class="wrap">
     <span class="brand">Agent<span class="on">on</span><span class="dot"></span>&nbsp;Pocket</span>
     <nav>
+      <a class="navlink" href="#why">why</a>
       <a class="navlink" href="#modes">modes</a>
       <a class="navlink" href="#switch">switch</a>
       <a class="navlink" href="#how">how it works</a>
@@ -471,6 +477,20 @@
     </div>
   </div>
 </div>
+
+<!-- WHY -->
+<section id="why">
+  <div class="wrap">
+    <p class="sec-eyebrow">imagine this</p>
+    <h2>Your agent stays at the desk. You don't.</h2>
+    <div class="story rv">
+      <p>Imagine your agent working through a long build while your phone sits at your desk as a compact gadget — a dedicated controller for the session on your screen. Pick it up and tap once, and it becomes your companion: the same live session follows you to the couch, out the door, anywhere.</p>
+      <p>Your coding agents belong at your desk, inside your security boundary — and that's exactly where AgentOn keeps them. Your phone is an input device, like a keyboard: it sends keystrokes and reads the screen, but the session, the code, the data <b>never leave your computer</b>.</p>
+      <p>Many phone companions mirror a single terminal through a cloud relay. AgentOn is built the other way: a daemon on your computer owns the sessions, so they survive detach, replay full scrollback, run any CLI agent — and hand the same session between your desk gadget and your pocket without reconnecting. Direct over your tailnet or LAN — <b>no cloud in the middle, no public port, no subscription.</b></p>
+      <p>No complex setup — start the daemon, scan a QR code, and AgentOn is to go. Check in from the couch, a jog, or the playground with the kids. Your agent keeps working; you keep an eye on it.</p>
+    </div>
+  </div>
+</section>
 
 <!-- MODES -->
 <section id="modes">
