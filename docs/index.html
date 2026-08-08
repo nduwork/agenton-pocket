@@ -423,8 +423,9 @@
   .codeblock{border:1px solid var(--rule);border-radius:11px;background:#0f1218;overflow:hidden}
   .codeblock .cbar{font-family:var(--mono);font-size:12px;color:var(--faint);
     padding:10px 16px;border-bottom:1px solid var(--rule);background:var(--panel)}
+  /* wraps instead of scrolling — every command fully visible, nothing hidden */
   .codeblock pre{margin:0;padding:18px 18px;font-family:var(--mono);font-size:13.5px;
-    line-height:1.85;overflow-x:auto;color:var(--fg)}
+    line-height:1.85;white-space:pre-wrap;word-break:break-all;color:var(--fg)}
   .codeblock .c{color:var(--faint)}
   .codeblock .g{color:var(--green)}
   .codeblock .cy{color:var(--cyan)}
@@ -456,7 +457,7 @@
     <span class="brand">Agent<span class="on">on</span><span class="dot"></span>&nbsp;Pocket</span>
     <nav>
       <a class="navlink" href="#story">how it goes</a>
-      <a class="navlink" href="#why">why</a>
+      <a class="navlink" href="#start">start</a>
       <a class="navlink" href="#modes">modes</a>
       <a class="navlink" href="#handoff">handoff</a>
       <a class="navlink" href="#features">features</a>
@@ -656,6 +657,41 @@
         </figcaption>
       </figure>
 
+    </div>
+  </div>
+</section>
+
+<!-- QUICKSTART -->
+<section id="start">
+  <div class="wrap">
+    <p class="sec-eyebrow">the real thing</p>
+    <h2>Same four frames, real commands.</h2>
+    <p class="sec-lead">One binary, one command to start, one QR to scan. The Tailscale step is once — and only for <span class="mono" style="color:var(--cyan)">vpn</span> mode.</p>
+    <div class="qs">
+      <div class="codeblock rv">
+        <div class="cbar">terminal — from zero to pocket</div>
+        <pre><span class="c"># vpn mode, once: Tailscale on computer + phone,</span>
+<span class="c"># same account, toggle on → </span><a href="https://tailscale.com/download">tailscale.com/download</a>
+
+<span class="g">$</span> curl -fsSL https://raw.githubusercontent.com/nduwork/agenton-pocket/main/install.sh | bash
+<span class="g">$</span> <span class="cy">agenton vpn</span>   <span class="c"># or: agenton lan — same Wi-Fi</span>
+<span class="c">#   → daemon + web + TUI up; QR prints on screen</span>
+
+<span class="c"># in the TUI: press</span> <span class="cy">n</span> <span class="c">→ new session → run</span> claude
+
+<span class="g">$</span> <span class="cy">agenton qr</span>    <span class="c"># reprint anytime (--web = browser)</span>
+<span class="c"># scan with your phone → ready. take it to go.</span></pre>
+      </div>
+      <div class="desc rv">
+        <h3>0 · Tailscale, once — vpn mode only</h3>
+        <p>Install <a href="https://tailscale.com/download">Tailscale</a> on computer and phone, sign in with the same account, flip the phone's VPN toggle on. Staying on the same Wi-Fi? Skip this and use <span class="m">agenton lan</span>.</p>
+        <h3>1 · Install and start</h3>
+        <p>The one-liner puts a single binary on your PATH. <span class="m">agenton vpn</span> (or <span class="m">lan</span>) starts the daemon, the web server, and the TUI — and prints the connect QR.</p>
+        <h3>2 · Open a session</h3>
+        <p>Press <span class="m">n</span> in the TUI for a fresh shell, then run <span class="m">claude</span>, <span class="m">codex</span>, or anything else inside it.</p>
+        <h3>3 · Scan with your phone</h3>
+        <p>Point the iOS app at the QR — or run <span class="m">agenton qr --web</span> for a code your plain camera opens in the browser. That's it: the session is in your pocket.</p>
+      </div>
     </div>
   </div>
 </section>
