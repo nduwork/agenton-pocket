@@ -13,7 +13,9 @@ the maintainer reviews and merges.
 
 agenton is GPL-3.0, but the copyright holder (Niu Du) also ships a proprietary
 build on the iOS App Store. That dual arrangement only works while all
-copyright is held by one author.
+copyright is held by one author. Bundled dependency licenses (e.g. the
+Tailscale client, BSD-3-Clause) are listed in
+[THIRD_PARTY_LICENSES.md](../THIRD_PARTY_LICENSES.md).
 
 **By submitting a contribution (a pull request, patch, or any code) you agree
 that:**
@@ -41,7 +43,7 @@ the maintainer cuts versioned releases and publishes the *official* iOS build
 from a private signing pipeline, on their own schedule.
 
 Anyone can build and run the app in the **iOS Simulator** with no Apple account
-or signing material — see [`ios/README.md`](ios/README.md). Contributors
+or signing material — see [`ios/README.md`](../ios/README.md). Contributors
 **cannot** submit builds to TestFlight or the App Store; that goes through the
 maintainer's signing pipeline only. To try the app on a physical device, request
 access to the beta test group by emailing <ndu@nduwork.com>.
