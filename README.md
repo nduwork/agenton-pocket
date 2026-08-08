@@ -15,6 +15,19 @@ be reused unchanged by a future native iOS client.
 
 ## Quickstart
 
+The whole thing, if you've seen it before:
+
+    # vpn mode only, once: install Tailscale on computer + phone —
+    # same account, phone VPN toggle on → https://tailscale.com/download
+
+    curl -fsSL https://raw.githubusercontent.com/nduwork/agenton-pocket/main/install.sh | bash
+    agenton vpn        # or: agenton lan — same Wi-Fi, no Tailscale needed
+    # TUI opens and a QR prints — press n for a new session, run claude inside
+    agenton qr         # reprint the QR anytime (--web for the browser client)
+
+Scan the QR with the iOS app (or your plain camera, for the web client) and
+you're connected. Step-by-step details below.
+
 ### 1. Pick how your phone reaches you
 
 agenton serves plain HTTP and opens no public port. It reaches your phone one of
