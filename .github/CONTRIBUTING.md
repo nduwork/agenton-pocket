@@ -33,20 +33,18 @@ contributing.
 
 ## What's open, and how releases work
 
-Both the Go core (daemon / TUI / web) **and** the iOS app (`ios/`) are open
-source in this repo and welcome contributions. The Contributor License grant
-above is exactly what lets accepted iOS contributions ship in the official,
-signed App Store build.
+The **Go core in this repo** — daemon / TUI / web — is open source under GPL-3.0
+and welcomes contributions. The **iOS app is closed-source and maintained in a
+separate repo**; its source is not part of this repo and is not accepted here.
+The Contributor License grant above is what lets accepted Go-core contributions
+also ship in the official, signed App Store build.
 
 **Merging a PR is not a release.** Contributions land on `main` after review;
 the maintainer cuts versioned releases and publishes the *official* iOS build
 from a private signing pipeline, on their own schedule.
 
-Anyone can build and run the app in the **iOS Simulator** with no Apple account
-or signing material — see [`ios/README.md`](../ios/README.md). Contributors
-**cannot** submit builds to TestFlight or the App Store; that goes through the
-maintainer's signing pipeline only. To try the app on a physical device, request
-access to the beta test group by emailing <ndu@nduwork.com>.
+To try the iOS app on a physical device, request access to the beta test group
+by emailing <ndu@nduwork.com>.
 
 ## Practical notes
 
@@ -57,13 +55,10 @@ access to the beta test group by emailing <ndu@nduwork.com>.
 - **Releases are daemon-only, and the commit type is the switch.** A release
   (new version tag + prebuilt binaries) is cut *only* by a daemon behavior
   change: `feat:`, `fix:`, `perf:`, or a breaking `!`. Anything that does not
-  change the daemon — docs, README, `install.sh`, CI, tests, refactors, or the
-  `ios/` mirror — must use a non-releasing type (`docs:`, `chore:`, `ci:`,
-  `test:`, `refactor:`) so release-please does not bump the version or rebuild
-  the artifact.
+  change the daemon — docs, README, `install.sh`, CI, tests, or refactors — must
+  use a non-releasing type (`docs:`, `chore:`, `ci:`, `test:`, `refactor:`) so
+  release-please does not bump the version or rebuild the artifact.
 - Keep changes focused and include a test where it makes sense.
 - Go: `go test -race ./...` must pass (CI runs `go vet` + race tests). CI skips
   the Go steps for docs-only changes (`docs/`, `assets/`, `*.md`, `LICENSE`) —
   the `test` check still reports green so it never blocks a docs PR.
-- iOS: `ios/Tools/build-sim.sh` must still compile (CI has no macOS runner, so
-  run this locally after Swift changes).

@@ -230,11 +230,10 @@ Presets pin an agent + cwd + custom buttons under a name:
 
     go test ./...             # unit + e2e (local, simulated-remote, WS bridge)
 
-Hacking on it? `./dev.sh` rebuilds, restarts the daemon + web, and installs a
-fresh iOS build on a simulator pointed at it. The steps are independent —
-`./dev.sh ios` leaves your running sessions alone, `./dev.sh -h` lists the rest.
-Note the web client is embedded in the binary, so editing `internal/web/static/`
-needs a rebuild + restart, not just a browser reload.
+Hacking on it? `./dev.sh` rebuilds and restarts the daemon + web. The steps are
+independent — `./dev.sh build` leaves your running sessions alone, `./dev.sh -h`
+lists the rest. Note the web client is embedded in the binary, so editing
+`internal/web/static/` needs a rebuild + restart, not just a browser reload.
 
 ## Architecture
 

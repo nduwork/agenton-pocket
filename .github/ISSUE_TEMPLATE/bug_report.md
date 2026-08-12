@@ -21,7 +21,7 @@ What you expected to happen instead.
 - Component: daemon / TUI / web / iOS
 - OS + version:
 - Agenton version (`agenton --version`) or commit:
-- For iOS: Xcode version, Simulator device / iOS version
+- For iOS: app version, iPhone model, iOS version
 
 **Logs / output**
 Paste any relevant output. Redact hostnames, tailnet names, and tokens.
