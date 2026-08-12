@@ -83,12 +83,13 @@
   .install button:hover{color:var(--cyan);background:#1d222c}
   .subcmds{font-family:var(--mono);font-size:13px;color:var(--faint);margin:14px 0 0}
   .subcmds b{color:var(--dim);font-weight:400}
-  /* app store placeholder — becomes a real link when the app ships */
   .hero-links{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:14px}
-  .appstore{display:inline-flex;align-items:center;gap:10px;border:1px dashed var(--rule);
-    border-radius:10px;padding:9px 15px;font-family:var(--mono);font-size:13px;color:var(--fg)}
-  .appstore .soon{color:var(--amber);font-size:11px;letter-spacing:.05em;text-transform:uppercase;
-    border:1px solid rgba(255,158,100,.35);border-radius:5px;padding:2px 8px}
+  .appstore{display:inline-flex;align-items:center;gap:10px;border:1px solid rgba(122,162,247,.55);
+    border-radius:10px;padding:9px 15px;font-family:var(--mono);font-size:13px;color:var(--fg);
+    background:rgba(122,162,247,.08);transition:border-color .15s,background .15s,transform .15s}
+  .appstore:hover{border-color:var(--cyan);background:rgba(122,162,247,.14);
+    text-decoration:none;transform:translateY(-1px)}
+  .appstore .store-note{color:var(--cyan);font-size:11px;letter-spacing:.05em;text-transform:uppercase}
   .hero-links .alt{font-family:var(--mono);font-size:12.5px;color:var(--faint)}
   /* two ways to reach your phone — vpn and lan as equals (mirrors the README
      modes table). Identical cards so neither reads as the "default". */
@@ -147,8 +148,7 @@
   @media(max-width:520px){.comic{grid-template-columns:1fr}}
   .panel{border:1px solid var(--rule);border-radius:13px;background:var(--panel);
     overflow:hidden;margin:0;display:flex;flex-direction:column}
-  .panel svg{display:block;width:100%;height:auto;background:#0f1218}
-  .panel svg text{font-family:var(--mono)}
+  .panel>img{display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:cover;background:#0f1218}
   .panel figcaption{padding:14px 16px 16px;border-top:1px solid var(--rule);flex:1}
   .panel .n{font-family:var(--mono);font-size:11px;letter-spacing:.08em;
     text-transform:uppercase;color:var(--cyan)}
@@ -507,8 +507,9 @@
       <button id="copy" aria-label="Copy install command">copy</button>
     </div>
     <div class="hero-links">
-      <!-- TODO: when the app ships, swap this span for <a class="appstore" href="APP_STORE_URL"> -->
-      <span class="appstore">iOS app<span class="soon">App Store · coming soon</span></span>
+      <a class="appstore" href="https://apps.apple.com/app/agenton-pocket/id6793348376" target="_blank" rel="noopener noreferrer" aria-label="Download Agenton Pocket on the App Store">
+        iOS app<span class="store-note">App Store ↗</span>
+      </a>
       <span class="alt">no iPhone? try the web client — Android APK coming soon</span>
     </div>
   </div>
@@ -523,30 +524,7 @@
 
       <!-- 01 · start -->
       <figure class="panel rv">
-        <svg viewBox="0 0 220 150" role="img" aria-label="Cartoon: a person at a desk starts agenton in a terminal on their computer">
-          <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="14" y1="130" x2="206" y2="130" stroke="var(--rule)" stroke-width="2"/>
-            <line x1="88" y1="98" x2="204" y2="98" stroke="var(--dim)" stroke-width="2.5"/>
-            <line x1="98" y1="98" x2="98" y2="130" stroke="var(--dim)" stroke-width="2.5"/>
-            <line x1="194" y1="98" x2="194" y2="130" stroke="var(--dim)" stroke-width="2.5"/>
-            <rect x="116" y="38" width="78" height="48" rx="5" stroke="var(--fg)" stroke-width="2" fill="var(--panel2)"/>
-            <line x1="155" y1="86" x2="155" y2="98" stroke="var(--fg)" stroke-width="2"/>
-            <line x1="143" y1="98" x2="167" y2="98" stroke="var(--fg)" stroke-width="2"/>
-            <text x="123" y="55" font-size="8.5" fill="var(--green)" stroke="none">$</text>
-            <text x="131" y="55" font-size="8.5" fill="var(--cyan)" stroke="none">agenton vpn</text>
-            <line x1="123" y1="64" x2="172" y2="64" stroke="var(--faint)" stroke-width="2"/>
-            <line x1="123" y1="71" x2="158" y2="71" stroke="var(--faint)" stroke-width="2"/>
-            <circle cx="126" cy="79" r="2.6" fill="var(--green)" stroke="none"/>
-            <text x="133" y="82" font-size="7.5" fill="var(--dim)" stroke="none">running</text>
-            <rect x="103" y="93" width="26" height="5" rx="2" stroke="var(--dim)" stroke-width="2"/>
-            <circle cx="58" cy="56" r="8" stroke="var(--fg)" stroke-width="2"/>
-            <path d="M58 64 C56 76 55 86 56 98" stroke="var(--fg)" stroke-width="2"/>
-            <path d="M57 73 L82 84 L103 92" stroke="var(--fg)" stroke-width="2"/>
-            <path d="M56 98 L75 100 L75 128" stroke="var(--fg)" stroke-width="2"/>
-            <path d="M42 66 L42 104 L64 104" stroke="var(--dim)" stroke-width="2.5"/>
-            <line x1="53" y1="104" x2="53" y2="128" stroke="var(--dim)" stroke-width="2.5"/>
-          </g>
-        </svg>
+        <img src="assets/how-it-goes/01-start.png" width="900" height="600" loading="lazy" decoding="async" alt="Cartoon of a developer starting Agenton from the daemon session screen at their desk">
         <figcaption>
           <span class="n">01 · start</span>
           <h3>One command at the desk</h3>
@@ -556,34 +534,7 @@
 
       <!-- 02 · pair -->
       <figure class="panel rv">
-        <svg viewBox="0 0 220 150" role="img" aria-label="Cartoon: a hand holds a phone up to scan a QR code shown on the computer screen">
-          <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="14" y1="130" x2="206" y2="130" stroke="var(--rule)" stroke-width="2"/>
-            <line x1="14" y1="100" x2="118" y2="100" stroke="var(--dim)" stroke-width="2.5"/>
-            <line x1="24" y1="100" x2="24" y2="130" stroke="var(--dim)" stroke-width="2.5"/>
-            <line x1="108" y1="100" x2="108" y2="130" stroke="var(--dim)" stroke-width="2.5"/>
-            <rect x="22" y="30" width="84" height="58" rx="5" stroke="var(--fg)" stroke-width="2" fill="var(--panel2)"/>
-            <line x1="64" y1="88" x2="64" y2="100" stroke="var(--fg)" stroke-width="2"/>
-            <g fill="var(--fg)" stroke="none">
-              <rect x="46" y="41" width="10" height="10" rx="1.5" fill="none" stroke="var(--fg)" stroke-width="2"/>
-              <rect x="72" y="41" width="10" height="10" rx="1.5" fill="none" stroke="var(--fg)" stroke-width="2"/>
-              <rect x="46" y="67" width="10" height="10" rx="1.5" fill="none" stroke="var(--fg)" stroke-width="2"/>
-              <rect x="49" y="44" width="4" height="4"/><rect x="75" y="44" width="4" height="4"/><rect x="49" y="70" width="4" height="4"/>
-              <rect x="61" y="43" width="3.4" height="3.4"/><rect x="66" y="50" width="3.4" height="3.4"/>
-              <rect x="59" y="56" width="3.4" height="3.4"/><rect x="74" y="57" width="3.4" height="3.4"/>
-              <rect x="63" y="63" width="3.4" height="3.4"/><rect x="74" y="70" width="3.4" height="3.4"/>
-              <rect x="66" y="70" width="3.4" height="3.4"/>
-            </g>
-            <line x1="150" y1="58" x2="92" y2="44" stroke="var(--cyan)" stroke-width="1.8" stroke-dasharray="4 5"/>
-            <line x1="150" y1="94" x2="92" y2="82" stroke="var(--cyan)" stroke-width="1.8" stroke-dasharray="4 5"/>
-            <rect x="152" y="44" width="36" height="64" rx="8" stroke="var(--fg)" stroke-width="2" fill="#0a0c10"/>
-            <path d="M160 56 h-3 v6 M180 56 h3 v6 M160 90 h-3 v-6 M180 90 h3 v-6" stroke="var(--cyan)" stroke-width="1.8"/>
-            <circle cx="170" cy="27" r="9" stroke="var(--green)" stroke-width="2"/>
-            <path d="M166 27 l3 3 l6 -6" stroke="var(--green)" stroke-width="2"/>
-            <path d="M158 108 C162 118 180 118 184 108" stroke="var(--fg)" stroke-width="2"/>
-            <path d="M184 112 L204 126" stroke="var(--fg)" stroke-width="2"/>
-          </g>
-        </svg>
+        <img src="assets/how-it-goes/02-pair.png" width="900" height="600" loading="lazy" decoding="async" alt="Cartoon of a developer pairing an iPhone by scanning a QR code on the Agenton screen">
         <figcaption>
           <span class="n">02 · pair</span>
           <h3>Scan the code on screen</h3>
@@ -593,42 +544,7 @@
 
       <!-- 03 · drive -->
       <figure class="panel rv">
-        <svg viewBox="0 0 220 150" role="img" aria-label="Cartoon: the phone sits on the desk as a button pad; the person taps its buttons and the session on the big screen reacts">
-          <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="14" y1="130" x2="206" y2="130" stroke="var(--rule)" stroke-width="2"/>
-            <line x1="64" y1="98" x2="204" y2="98" stroke="var(--dim)" stroke-width="2.5"/>
-            <line x1="74" y1="98" x2="74" y2="130" stroke="var(--dim)" stroke-width="2.5"/>
-            <line x1="194" y1="98" x2="194" y2="130" stroke="var(--dim)" stroke-width="2.5"/>
-            <rect x="134" y="40" width="64" height="44" rx="5" stroke="var(--fg)" stroke-width="2" fill="var(--panel2)"/>
-            <line x1="166" y1="84" x2="166" y2="98" stroke="var(--fg)" stroke-width="2"/>
-            <line x1="155" y1="98" x2="177" y2="98" stroke="var(--fg)" stroke-width="2"/>
-            <text x="140" y="56" font-size="7.5" fill="var(--cyan)" stroke="none">❯ run tests</text>
-            <line x1="148" y1="63" x2="168" y2="63" stroke="var(--faint)" stroke-width="2"/>
-            <circle cx="144" cy="73" r="2.4" fill="var(--green)" stroke="none"/>
-            <text x="150" y="76" font-size="7" fill="var(--dim)" stroke="none">running</text>
-            <!-- phone lying on the desk in landscape: a little button-pad gadget -->
-            <rect x="86" y="74" width="38" height="24" rx="4.5" stroke="var(--fg)" stroke-width="2" fill="#0a0c10"/>
-            <g stroke="var(--faint)" stroke-width="1.5">
-              <rect x="90" y="78" width="8" height="7" rx="1.5" stroke="var(--green)"/>
-              <rect x="101" y="78" width="8" height="7" rx="1.5"/>
-              <rect x="112" y="78" width="8" height="7" rx="1.5"/>
-              <rect x="90" y="88" width="8" height="7" rx="1.5"/>
-              <rect x="101" y="88" width="8" height="7" rx="1.5"/>
-              <rect x="112" y="88" width="8" height="7" rx="1.5"/>
-            </g>
-            <!-- tap spark on the highlighted key -->
-            <path d="M92 72 L90 68 M96 72 L97 67 M99 74 L103 71" stroke="var(--cyan)" stroke-width="1.6"/>
-            <!-- person seated, finger on the pad -->
-            <circle cx="40" cy="54" r="8" stroke="var(--fg)" stroke-width="2"/>
-            <path d="M40 62 C38 76 37 86 38 98" stroke="var(--fg)" stroke-width="2"/>
-            <path d="M40 70 L68 82 L91 84" stroke="var(--fg)" stroke-width="2"/>
-            <path d="M38 98 L58 100 L58 128" stroke="var(--fg)" stroke-width="2"/>
-            <path d="M24 64 L24 104 L46 104" stroke="var(--dim)" stroke-width="2.5"/>
-            <line x1="35" y1="104" x2="35" y2="128" stroke="var(--dim)" stroke-width="2.5"/>
-            <!-- control link: pad drives the big screen -->
-            <path d="M126 72 C130 64 132 60 134 56" stroke="var(--cyan)" stroke-width="1.8" stroke-dasharray="4 5"/>
-          </g>
-        </svg>
+        <img src="assets/how-it-goes/03-drive.png" width="900" height="600" loading="lazy" decoding="async" alt="Cartoon of an iPhone controller pad driving a live Agenton terminal on a desktop monitor">
         <figcaption>
           <span class="n">03 · drive</span>
           <h3>The phone is the desk gadget</h3>
@@ -638,26 +554,7 @@
 
       <!-- 04 · to go -->
       <figure class="panel rv">
-        <svg viewBox="0 0 220 150" role="img" aria-label="Cartoon: a person walks away holding their phone, still connected by a dashed line to the session running at home">
-          <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="14" y1="130" x2="206" y2="130" stroke="var(--rule)" stroke-width="2"/>
-            <path d="M18 68 L46 46 L74 68" stroke="var(--dim)" stroke-width="2.5"/>
-            <path d="M26 68 L26 106 L66 106 L66 68" stroke="var(--dim)" stroke-width="2.5"/>
-            <rect x="36" y="78" width="20" height="14" rx="2" stroke="var(--faint)" stroke-width="1.8"/>
-            <circle cx="46" cy="85" r="2.6" fill="var(--green)" stroke="none"/>
-            <path d="M66 60 C100 32 136 36 160 54" stroke="var(--cyan)" stroke-width="1.8" stroke-dasharray="5 6"/>
-            <circle cx="150" cy="48" r="8" stroke="var(--fg)" stroke-width="2"/>
-            <path d="M150 56 L147 90" stroke="var(--fg)" stroke-width="2"/>
-            <path d="M149 64 L166 68" stroke="var(--fg)" stroke-width="2"/>
-            <path d="M149 64 L134 78" stroke="var(--fg)" stroke-width="2"/>
-            <rect x="164" y="58" width="14" height="24" rx="3.5" stroke="var(--fg)" stroke-width="2" fill="#0a0c10"/>
-            <path d="M147 90 L166 108 L170 128" stroke="var(--fg)" stroke-width="2"/>
-            <path d="M147 90 L134 110 L128 128" stroke="var(--fg)" stroke-width="2"/>
-            <line x1="112" y1="58" x2="122" y2="58" stroke="var(--faint)" stroke-width="2"/>
-            <line x1="106" y1="70" x2="118" y2="70" stroke="var(--faint)" stroke-width="2"/>
-            <line x1="112" y1="82" x2="120" y2="82" stroke="var(--faint)" stroke-width="2"/>
-          </g>
-        </svg>
+        <img src="assets/how-it-goes/04-to-go.png" width="900" height="600" loading="lazy" decoding="async" alt="Cartoon of a developer walking away while the live Agenton session continues between their home computer and iPhone">
         <figcaption>
           <span class="n">04 · to go</span>
           <h3>Walk out mid-run</h3>
