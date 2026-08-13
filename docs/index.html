@@ -503,7 +503,7 @@
     </div>
 
     <div class="install">
-      <div class="cmd"><span class="pmt">$</span><span id="cmd">curl -fsSL https://raw.githubusercontent.com/nduwork/agenton-pocket/main/install.sh | bash</span></div>
+      <div class="cmd"><span class="pmt">$</span><span id="cmd">curl -fsSL https://agenton.nduwork.com/install.sh | bash</span></div>
       <button id="copy" aria-label="Copy install command">copy</button>
     </div>
     <div class="hero-links">
@@ -577,7 +577,7 @@
         <span class="sn">1</span>
         <div class="sb">
           <h3>Install</h3>
-          <div class="cmdline"><span class="cx"><span class="pmt">$</span> curl -fsSL https://raw.githubusercontent.com/nduwork/agenton-pocket/main/install.sh | bash</span></div>
+          <div class="cmdline"><span class="cx"><span class="pmt">$</span> curl -fsSL https://agenton.nduwork.com/install.sh | bash</span></div>
           <p>Drops one small binary on your PATH — macOS or Linux.</p>
         </div>
       </li>
@@ -883,7 +883,7 @@
   // copy install command
   var btn=document.getElementById('copy');
   if(btn){btn.addEventListener('click',function(){
-    navigator.clipboard.writeText('curl -fsSL https://raw.githubusercontent.com/nduwork/agenton-pocket/main/install.sh | bash').then(function(){
+    navigator.clipboard.writeText('curl -fsSL https://agenton.nduwork.com/install.sh | bash').then(function(){
       var o=btn.textContent;btn.textContent='copied ✓';btn.style.color='var(--green)';
       setTimeout(function(){btn.textContent=o;btn.style.color='';},1400);
     });

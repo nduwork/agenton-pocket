@@ -20,7 +20,7 @@ The whole thing, if you've seen it before:
     # vpn mode only, once: install Tailscale on computer + phone —
     # same account, phone VPN toggle on → https://tailscale.com/download
 
-    curl -fsSL https://raw.githubusercontent.com/nduwork/agenton-pocket/main/install.sh | bash
+    curl -fsSL https://agenton.nduwork.com/install.sh | bash
     agenton vpn        # or: agenton lan — same Wi-Fi, no Tailscale needed
     # TUI opens and a QR prints — press n for a new session, run claude inside
     agenton qr         # reprint the QR anytime (--web for the browser client)
@@ -58,7 +58,7 @@ toggle on.
 No clone needed — pick whichever fits. One-liner (macOS / Linux), fetches a
 prebuilt binary:
 
-    curl -fsSL https://raw.githubusercontent.com/nduwork/agenton-pocket/main/install.sh | bash
+    curl -fsSL https://agenton.nduwork.com/install.sh | bash
 
 Go users:
 
