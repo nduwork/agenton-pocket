@@ -7,9 +7,6 @@ uses only its local-API client, not the embedded `tsnet` node.
 
 Regenerate with: `go-licenses csv ./cmd/agenton`.
 
-The iOS app (`ios/`) additionally links one Swift package, listed under
-[iOS / Swift dependencies](#ios--swift-dependencies) below.
-
 | Module | License | Source |
 |---|---|---|
 | `filippo.io/edwards25519` | BSD-3-Clause | https://github.com/FiloSottile/edwards25519/blob/v1.2.0/LICENSE |
@@ -70,11 +67,3 @@ inside the binary via `go:embed`.
 |---|---|---|
 | `@xterm/xterm@5.5.0` (xterm.js, xterm.css) | MIT | https://github.com/xtermjs/xterm.js/blob/master/LICENSE |
 | `@xterm/addon-fit@0.10.0` (addon-fit.js) | MIT | https://github.com/xtermjs/xterm.js/blob/master/LICENSE |
-
-## iOS / Swift dependencies
-
-The SwiftUI app links one third-party Swift package (resolved by SwiftPM):
-
-| Package | License | Source |
-|---|---|---|
-| `SwiftTerm` | MIT | https://github.com/migueldeicaza/SwiftTerm/blob/main/LICENSE |
