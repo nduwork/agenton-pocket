@@ -91,6 +91,12 @@
     text-decoration:none;transform:translateY(-1px)}
   .appstore .store-note{color:var(--cyan);font-size:11px;letter-spacing:.05em;text-transform:uppercase}
   .hero-links .alt{font-family:var(--mono);font-size:12.5px;color:var(--faint)}
+  .qr{display:inline-flex;flex-direction:column;align-items:center;gap:6px;text-decoration:none}
+  .qr img{width:96px;height:96px;border-radius:10px;background:#fff;padding:7px;
+    box-shadow:0 2px 12px rgba(0,0,0,.28)}
+  .qr .qr-cap{font-family:var(--mono);font-size:11px;letter-spacing:.05em;
+    text-transform:uppercase;color:var(--faint)}
+  .qr:hover .qr-cap{color:var(--cyan)}
   /* two ways to reach your phone — vpn and lan as equals (mirrors the README
      modes table). Identical cards so neither reads as the "default". */
   .reach{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0 0;max-width:560px}
@@ -509,6 +515,10 @@
     <div class="hero-links">
       <a class="appstore" href="https://apps.apple.com/app/agenton-pocket/id6793348376" target="_blank" rel="noopener noreferrer" aria-label="Download Agenton Pocket on the App Store">
         iOS app<span class="store-note">App Store ↗</span>
+      </a>
+      <a class="qr" href="https://apps.apple.com/app/agenton-pocket/id6793348376" target="_blank" rel="noopener noreferrer" aria-label="Scan QR code to download Agenton Pocket on the App Store">
+        <img src="assets/appstore-qr.svg" alt="QR code linking to Agenton Pocket on the App Store" width="96" height="96">
+        <span class="qr-cap">scan to install</span>
       </a>
       <span class="alt">no iPhone? try the web client — Android APK coming soon</span>
     </div>
