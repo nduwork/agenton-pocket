@@ -12,6 +12,7 @@ on:
     branches: [main]
     paths:
       - "docs/**"
+      - "install.sh"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -33,6 +34,10 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
+      # Serve the canonical root install.sh at agenton.nduwork.com/install.sh
+      # without keeping a second copy in the repo. The checkout is ephemeral,
+      # so this copy never gets committed.
+      - run: cp install.sh docs/install.sh
       - uses: actions/upload-pages-artifact@v5
         with:
           path: docs
