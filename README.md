@@ -5,6 +5,7 @@
 <p align="center">
   <a href="https://github.com/nduwork/agenton-pocket/actions/workflows/ci.yml"><img src="https://github.com/nduwork/agenton-pocket/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPLv3-blue" alt="License: GPLv3"></a>
+  <a href="https://discord.gg/XYcD8TTX3"><img src="https://img.shields.io/badge/discord-join%20chat-5865F2" alt="Discord"></a>
 </p>
 
 Run `claude` / `codex` / any CLI agent in daemon-owned sessions, and drive them
