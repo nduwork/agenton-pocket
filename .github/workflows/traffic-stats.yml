@@ -20,8 +20,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # @RELEASE is the maintainer's moving "latest stable" tag; pin to a SHA if
-      # you want it frozen. The default GITHUB_TOKEN has the push access the
-      # traffic API requires for this same repo — no PAT needed.
+      # you want it frozen. The traffic API (referrers/clones/views) is NOT
+      # accessible with the default GITHUB_TOKEN — it 403s "Resource not
+      # accessible by integration". A PAT is required: create a classic token
+      # with `repo` scope (or a fine-grained token with Administration:read +
+      # Contents:read/write on this repo), then add it as the GHRS_PAT secret.
       - uses: jgehrcke/github-repo-stats@RELEASE
         with:
-          ghtoken: ${{ secrets.GITHUB_TOKEN }}
+          ghtoken: ${{ secrets.GHRS_PAT }}
