@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/nduwork/agenton-pocket/compare/v0.3.0...v0.3.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* **analytics:** use PAT for traffic-stats, GITHUB_TOKEN can't read traffic API ([#49](https://github.com/nduwork/agenton-pocket/issues/49)) ([0008226](https://github.com/nduwork/agenton-pocket/commit/0008226bbcbc65a62fda96bd064ec82e48935624))
+
 ## [0.3.0](https://github.com/nduwork/agenton-pocket/compare/v0.2.1...v0.3.0) (2026-08-14)
 
 
