@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/nduwork/agenton-pocket/compare/v0.2.1...v0.3.0) (2026-08-14)
+
+
+### Features
+
+* **analytics:** add privacy-friendly visitor tracking ([#46](https://github.com/nduwork/agenton-pocket/issues/46)) ([d4442f9](https://github.com/nduwork/agenton-pocket/commit/d4442f919f40ccdbacb1620a7663d1b52cd46335))
+
 ## [0.2.1](https://github.com/nduwork/agenton-pocket/compare/v0.2.0...v0.2.1) (2026-08-07)
 
 
