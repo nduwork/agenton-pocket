@@ -461,12 +461,27 @@ func (d *Daemon) handleSessionExit(s *Session) {
 	d.mu.Unlock()
 }
 
+// maxFrameBytes bounds a single output frame. The attach replay serializes the
+// whole scrollback into one multi-MB blob; sent as a single frame it becomes one
+// oversized WebSocket message that mobile browsers drop (exceeding their message
+// size limit) or stall the main thread rendering — either way the phone shows
+// "disconnected". Splitting the replay into <=64 KiB frames keeps every message
+// small while preserving the full history. Live output already arrives in small
+// PTY-sized reads (see readLoop), so only the replay is ever this large.
+//
+// Byte-boundary splits are safe: both clients feed frame payloads into a
+// streaming VT parser in order, so an escape sequence cut across two frames is
+// reassembled exactly as if it had arrived whole.
+const maxFrameBytes = 64 << 10
+
 func (d *Daemon) streamTo(cw *connWriter, s *Session) {
 	ch, snap := s.SubscribeWithScrollback(cw)
 	defer s.Unsubscribe(ch)
 	for _, b := range snap {
-		if err := cw.write(protocol.Frame{Type: protocol.TypeOutput, SessionID: s.ID, Payload: b}); err != nil {
-			return
+		for _, chunk := range splitFrames(b, maxFrameBytes) {
+			if err := cw.write(protocol.Frame{Type: protocol.TypeOutput, SessionID: s.ID, Payload: chunk}); err != nil {
+				return
+			}
 		}
 	}
 	for b := range ch {
@@ -474,6 +489,24 @@ func (d *Daemon) streamTo(cw *connWriter, s *Session) {
 			return
 		}
 	}
+}
+
+// splitFrames slices b into consecutive pieces of at most max bytes, returned as
+// zero-copy subslices. Returns nil for empty b. A non-positive max would never
+// make progress, so it is treated as "no split" (one piece) rather than looping.
+func splitFrames(b []byte, max int) [][]byte {
+	if len(b) == 0 {
+		return nil
+	}
+	if max <= 0 {
+		return [][]byte{b}
+	}
+	var out [][]byte
+	for len(b) > max {
+		out = append(out, b[:max])
+		b = b[max:]
+	}
+	return append(out, b)
 }
 
 func (d *Daemon) listSessions(tree procTree) []protocol.SessionInfo {
