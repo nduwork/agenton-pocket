@@ -74,6 +74,17 @@ type blinkTickMsg struct{}
 // cursorBlink is the composited cursor's blink half-period.
 const cursorBlink = 500 * time.Millisecond
 
+// Render coalescing. Agents redraw their footer/input as a burst of writes
+// (cursor-up, rewrite line, repeat); rendering on every write paints the
+// half-finished intermediate frames — the "overlapping text" artifact. After
+// the first damage we wait for a short quiet gap so the burst settles before
+// rendering, capped so continuous output (spinners, streaming) still repaints
+// promptly.
+const (
+	coalesceQuiet = 5 * time.Millisecond
+	coalesceMax   = 20 * time.Millisecond
+)
+
 func blinkTick() tea.Cmd {
 	return tea.Tick(cursorBlink, func(time.Time) tea.Msg { return blinkTickMsg{} })
 }
@@ -186,16 +197,34 @@ func waitForDamage(emu *vtEmu) tea.Cmd {
 	notify := emu.NotifyChanged()
 	done := emu.Done()
 	return func() tea.Msg {
-		// Surface any damage that arrived before we armed (e.g. the initial
-		// frame produced by Resize) without blocking.
-		if f := emu.GetScreen(); f.Changed {
-			return renderTickMsg{}
-		}
+		// Block for the first damage (notifyC is buffered depth 1, so damage
+		// that arrived before we armed is already waiting here).
 		select {
 		case <-done:
 			return nil
 		case <-notify:
-			return renderTickMsg{}
+		}
+		// Coalesce the redraw burst: render once it goes quiet for coalesceQuiet,
+		// or after coalesceMax if writes never pause — so we paint settled frames
+		// instead of the agent's half-drawn intermediate ones.
+		quiet := time.NewTimer(coalesceQuiet)
+		defer quiet.Stop()
+		maxWait := time.NewTimer(coalesceMax)
+		defer maxWait.Stop()
+		for {
+			select {
+			case <-done:
+				return nil
+			case <-notify:
+				if !quiet.Stop() {
+					<-quiet.C
+				}
+				quiet.Reset(coalesceQuiet)
+			case <-quiet.C:
+				return renderTickMsg{}
+			case <-maxWait.C:
+				return renderTickMsg{}
+			}
 		}
 	}
 }
