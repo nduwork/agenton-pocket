@@ -62,6 +62,13 @@ type Session struct {
 	// agent's screen state that a mid-session snapshot can't otherwise carry.
 	modes     map[int]bool
 	subs      map[chan []byte]*connWriter
+	// reqSize is each client conn's last requested dimensions. The shared PTY
+	// WIDTH is clamped to the widest entry so a narrow client (phone) never
+	// shrinks it under a wider one (desk): lines emitted while narrow freeze at
+	// that width in scrollback, and no emulator reflows history — so a desk that
+	// later widens is stuck with narrow-wrapped history. Height still follows the
+	// active owner (height has no such frozen-history problem). Guarded by mu.
+	reqSize   map[*connWriter][2]int
 	sizeOwner any  // the client conn whose size the shared PTY follows
 	ended     bool // process exited/killed: reject new subscribers with a closed channel
 	// liveAgent is the agent name last pushed to attached clients as the session
@@ -126,6 +133,39 @@ func (s *Session) reassignOwnerAfter(cw *connWriter) *connWriter {
 	return owner
 }
 
+// recordWidth records cw's requested dimensions and returns the width the shared
+// PTY should use: the max requested width across all clients. Clamping to the
+// widest client is what stops a narrow phone from shrinking the PTY under a
+// wider desk and freezing narrow-wrapped lines into scrollback (see reqSize).
+func (s *Session) recordWidth(cw *connWriter, cols, rows int) int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.reqSize[cw] = [2]int{cols, rows}
+	return s.maxColsLocked()
+}
+
+// dropWidth forgets cw's requested size (on disconnect) and returns the new
+// clamped width — 0 if no client remains. The caller shrinks the PTY to it so
+// the width comes back down once the widest client leaves.
+func (s *Session) dropWidth(cw *connWriter) int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	delete(s.reqSize, cw)
+	return s.maxColsLocked()
+}
+
+// maxColsLocked returns the widest requested width across attached clients (0 if
+// none). Caller holds s.mu.
+func (s *Session) maxColsLocked() int {
+	w := 0
+	for _, sz := range s.reqSize {
+		if sz[0] > w {
+			w = sz[0]
+		}
+	}
+	return w
+}
+
 // hasSubs reports whether any client is attached — the agent watcher skips its
 // process scan entirely when nobody is watching.
 func (s *Session) hasSubs() bool {
@@ -164,6 +204,7 @@ func NewSession(id uint32, name string, preset Preset) *Session {
 		keys:      keysForCommand(strings.Join(append([]string{preset.Command}, preset.Args...), " ")),
 		Status:    "starting",
 		subs:      map[chan []byte]*connWriter{},
+		reqSize:   map[*connWriter][2]int{},
 		modes:     map[int]bool{},
 		emu:       emu,
 		liveAgent: preset.Agent, // updated by the daemon's agent watcher as sub-agents come and go

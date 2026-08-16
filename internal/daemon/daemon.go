@@ -103,6 +103,13 @@ func (d *Daemon) handleConn(conn net.Conn) {
 		d.mu.Unlock()
 		for _, s := range sessions {
 			s.reassignOwnerAfter(cw)
+			// Drop this conn's width contribution; if it was the widest client,
+			// shrink the shared PTY so the width comes back down once it leaves.
+			if w := s.dropWidth(cw); w > 0 {
+				if c, r := s.Size(); w != c {
+					_ = s.Resize(w, r)
+				}
+			}
 			d.broadcastActive(s)
 		}
 	}()
@@ -127,16 +134,17 @@ func (d *Daemon) handleConn(conn net.Conn) {
 	}
 }
 
-// refocusSize re-applies this conn's requested size for s if another client
-// resized the shared PTY since — called on input/action, so the actively-used
-// device's layout wins without any explicit ownership handoff.
-func refocusSize(s *Session, sizes map[uint32][2]int) {
+// refocusSize re-applies this conn's requested size for s when it takes active
+// control, so the actively-used device's height wins. Width stays clamped to the
+// widest attached client (recordWidth), so taking control never narrows history.
+func refocusSize(s *Session, cw *connWriter, sizes map[uint32][2]int) {
 	sz, ok := sizes[s.ID]
 	if !ok {
 		return
 	}
-	if c, r := s.Size(); c != sz[0] || r != sz[1] {
-		_ = s.Resize(sz[0], sz[1])
+	w := s.recordWidth(cw, sz[0], sz[1])
+	if c, r := s.Size(); w != c || sz[1] != r {
+		_ = s.Resize(w, sz[1])
 	}
 }
 
@@ -311,14 +319,22 @@ func (d *Daemon) handle(cw *connWriter, env protocol.Envelope, sizes map[uint32]
 			return
 		}
 		sizes[env.SessionID] = [2]int{env.Cols, env.Rows} // remember for refocus
-		// Only resize the shared PTY if we own the size (or claim it while
-		// unowned). A second client attaching/resizing while someone else is
-		// actively driving the session no longer shrinks it under them.
 		wasOwner := s.ownerConn() == cw
-		if !s.ownsSize(cw, true) {
+		claimed := s.ownsSize(cw, true) // owner, or claims the size while unowned
+		// The shared PTY width is clamped to the widest attached client, so a
+		// narrow phone never shrinks it under a wider desk (which would freeze
+		// narrow-wrapped lines into scrollback the desk can't reflow).
+		w := s.recordWidth(cw, env.Cols, env.Rows)
+		if !claimed {
+			// Someone else owns the size (this client is parked, e.g. a desk that
+			// resized its window while the phone drives). It does not set height,
+			// but its width still counts — grow the PTY if it is now the widest.
+			if c, r := s.Size(); w > c {
+				_ = s.Resize(w, r)
+			}
 			return
 		}
-		if err := s.Resize(env.Cols, env.Rows); err != nil {
+		if err := s.Resize(w, env.Rows); err != nil {
 			d.logf.Printf("resize session %d: %v", env.SessionID, err)
 		}
 		if !wasOwner {
@@ -335,7 +351,7 @@ func (d *Daemon) handle(cw *connWriter, env protocol.Envelope, sizes map[uint32]
 		}
 		if *env.Active {
 			s.takeSize(cw)
-			refocusSize(s, sizes) // re-apply this client's remembered dims now
+			refocusSize(s, cw, sizes) // re-apply this client's remembered dims now
 		} else {
 			// Release ownership; hand the size to another attached client if one
 			// exists. The new owner re-applies its own dimensions on its next
