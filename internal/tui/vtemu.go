@@ -135,7 +135,7 @@ func (e *vtEmu) Done() <-chan struct{}          { return e.stopChan }
 
 // Close stops the loops. Like bubbleterm, it does NOT call vt.Close(): the vt
 // emulator does not synchronize Close with Read/Write, and closing the pipe
-// endpoints (reader.stop / client.Close in sessionModel.Close) ends the read
+// endpoints (reader.stop / client.Close in the session view) ends the read
 // loop. responseLoop stays parked in vt.Read — an accepted per-attach leak
 // until x/vt grows a race-safe Close — so drop the scrollback here to keep
 // what it pins small.
