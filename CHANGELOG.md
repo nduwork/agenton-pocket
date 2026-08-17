@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.2](https://github.com/nduwork/agenton-pocket/compare/v0.3.1...v0.3.2) (2026-08-16)
+
+
+### Bug Fixes
+
+* **daemon:** chunk attach replay so mobile clients don't disconnect ([#52](https://github.com/nduwork/agenton-pocket/issues/52)) ([f068299](https://github.com/nduwork/agenton-pocket/commit/f0682995bc5fd46c88af4e54a36163b121ad72b1))
+* **tui:** coalesce render bursts so agent redraws don't paint half-drawn frames ([#56](https://github.com/nduwork/agenton-pocket/issues/56)) ([1b781c3](https://github.com/nduwork/agenton-pocket/commit/1b781c39f6b10c59831a797d0a069f6cf6dcab82))
+
 ## [0.3.1](https://github.com/nduwork/agenton-pocket/compare/v0.3.0...v0.3.1) (2026-08-14)
 
 
