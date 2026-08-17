@@ -18,7 +18,6 @@ type attachMsg struct {
 	id   uint32
 	name string
 }
-type backToEntryMsg struct{}
 type errMsg struct{ message string }
 
 type entryModel struct {

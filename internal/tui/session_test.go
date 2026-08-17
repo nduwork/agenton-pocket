@@ -1,99 +1,122 @@
 package tui
 
 import (
-	"strings"
+	"bytes"
 	"testing"
 
-	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/x/ansi"
 )
 
-// ctrl+t is the one reserved key: it returns to the session list to switch
-// sessions, and never reaches the PTY. Everything else is raw passthrough
-// (covered by TestEncodeTeaKey).
-func TestSessionCtrlTSwitchesSessions(t *testing.T) {
-	m := &sessionModel{}
-	_, cmd := m.handleKey(tea.KeyMsg{Type: tea.KeyCtrlT})
-	if cmd == nil {
-		t.Fatal("ctrl+t returned no command")
+// ctrl+t (0x14) is the one reserved key: it returns to the session list and
+// never reaches the PTY. Everything else passes through in order.
+func TestSplitInputInterceptsCtrlT(t *testing.T) {
+	segs, ctrlT := splitInput([]byte("ab\x14cd"))
+	if !ctrlT {
+		t.Fatal("ctrl+t not detected")
 	}
-	if _, ok := cmd().(backToEntryMsg); !ok {
-		t.Fatalf("ctrl+t should emit backToEntryMsg, got %T", cmd())
+	if len(segs) != 2 || string(segs[0]) != "ab" || string(segs[1]) != "cd" {
+		t.Fatalf("segments = %q, want [ab cd]", segs)
 	}
 }
 
-// activeMsg(false) parks the view and freezes the current frame; activeMsg(true)
-// un-parks. Both cases must re-arm waitForActive so the next ownership change
-// is still observed.
-func TestSessionActiveMsgParksAndUnparks(t *testing.T) {
-	ch := make(chan bool)
-	m := &sessionModel{activeCh: ch}
-
-	m2, cmd := m.Update(activeMsg(false))
-	if !m2.parked {
-		t.Fatal("activeMsg(false) should park the view")
+func TestSplitInputPassesThrough(t *testing.T) {
+	segs, ctrlT := splitInput([]byte("hello"))
+	if ctrlT {
+		t.Fatal("ctrl+t detected in plain input")
 	}
-	if cmd == nil {
-		t.Fatal("activeMsg(false) should re-arm waitForActive")
-	}
-
-	m3, cmd := m2.Update(activeMsg(true))
-	if m3.parked {
-		t.Fatal("activeMsg(true) should un-park the view")
-	}
-	if cmd == nil {
-		t.Fatal("activeMsg(true) should re-arm waitForActive")
+	if len(segs) != 1 || string(segs[0]) != "hello" {
+		t.Fatalf("segments = %q, want [hello]", segs)
 	}
 }
 
-// Any key un-parks locally (not just ctrl+t) so the overlay doesn't linger
-// for the frame before the daemon confirms Active:true.
-func TestSessionAnyKeyUnparks(t *testing.T) {
-	m := &sessionModel{parked: true}
-	m.handleKey(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("a")})
-	if m.parked {
-		t.Fatal("keypress while parked should clear parked immediately")
+func TestSplitInputLeadingAndTrailingCtrlT(t *testing.T) {
+	segs, ctrlT := splitInput([]byte("\x14a\x14"))
+	if !ctrlT {
+		t.Fatal("ctrl+t not detected")
+	}
+	if len(segs) != 1 || string(segs[0]) != "a" {
+		t.Fatalf("segments = %q, want [a]", segs)
 	}
 }
 
-// The input writer must deliver every enqueued action exactly once, in order —
-// the fix for keystrokes racing when each was forwarded as its own Bubble Tea
-// Cmd (goroutine-per-key, no ordering guarantee).
-func TestSessionInputWriterPreservesOrder(t *testing.T) {
-	m := &sessionModel{}
-	m.startInputWriter()
-	var got []int
-	for i := 0; i < 200; i++ {
-		i := i
-		m.enqueue(func() { got = append(got, i) })
+// SGR mouse events arrive in the agent's grid coordinates plus the hint bar's
+// 1-row offset; the y coordinate must be decremented so clicks land on the
+// right element.
+func TestSGRMouseSeqTranslatesY(t *testing.T) {
+	out, n, state := sgrMouseSeq([]byte("\x1b[<0;5;10M"))
+	if state != sgrComplete {
+		t.Fatalf("state = %d, want sgrComplete", state)
 	}
-	done := make(chan struct{})
-	m.enqueue(func() { close(done) }) // FIFO: runs after all 200
-	<-done
-	if len(got) != 200 {
-		t.Fatalf("lost input: got %d of 200", len(got))
+	if n != len("\x1b[<0;5;10M") {
+		t.Fatalf("consumed %d bytes, want %d", n, len("\x1b[<0;5;10M"))
 	}
-	for i, v := range got {
-		if v != i {
-			t.Fatalf("input reordered at index %d: got %d", i, v)
-		}
+	if want := "\x1b[<0;5;9M"; string(out) != want {
+		t.Fatalf("translated = %q, want %q", out, want)
 	}
 }
 
-// renderParked must keep the frame's line count (so it still fills the
-// terminal) and must show the takeover hint text somewhere in the output.
-func TestSessionRenderParked(t *testing.T) {
-	m := &sessionModel{
-		parked: true,
-		frozen: "line0\nline1\nline2\nline3\nline4",
-		width:  40,
-		height: 5,
+// Events on the hint row (y=1) are dropped — the agent's grid starts at host
+// row 2.
+func TestSGRMouseSeqDropsHintRow(t *testing.T) {
+	out, n, state := sgrMouseSeq([]byte("\x1b[<0;5;1M"))
+	if state != sgrComplete {
+		t.Fatalf("state = %d, want sgrComplete", state)
 	}
-	out := m.View()
-	lines := strings.Split(out, "\n")
-	if len(lines) != 5 {
-		t.Fatalf("renderParked changed line count: got %d, want 5", len(lines))
+	if out != nil {
+		t.Fatalf("hint-row event not dropped: %q", out)
 	}
-	if !strings.Contains(out, "Phone active") {
-		t.Fatalf("renderParked output missing takeover hint: %q", out)
+	if n != len("\x1b[<0;5;1M") {
+		t.Fatalf("consumed %d bytes, want %d", n, len("\x1b[<0;5;1M"))
+	}
+}
+
+// A sequence split across read chunks must wait for the rest, not be forwarded
+// half-parsed.
+func TestSGRMouseSeqIncomplete(t *testing.T) {
+	_, _, state := sgrMouseSeq([]byte("\x1b[<0;5;"))
+	if state != sgrIncomplete {
+		t.Fatalf("state = %d, want sgrIncomplete", state)
+	}
+}
+
+// A non-mouse sequence that happens to start with ESC[< is malformed, not
+// incomplete — the caller forwards the ESC[< literally instead of waiting.
+func TestSGRMouseSeqMalformed(t *testing.T) {
+	_, _, state := sgrMouseSeq([]byte("\x1b[<foo"))
+	if state != sgrMalformed {
+		t.Fatalf("state = %d, want sgrMalformed", state)
+	}
+}
+
+// The hint bar must fill the row (reverse video covers it edge to edge) and
+// truncate when the terminal is narrower than the hint.
+func TestHintBarTextPadsAndTruncates(t *testing.T) {
+	wide := hintBarText(200)
+	if ansi.StringWidth(wide) != 200 {
+		t.Fatalf("hint padded to %d cells, want 200", ansi.StringWidth(wide))
+	}
+	if !bytes.HasSuffix([]byte(wide), bytes.Repeat([]byte(" "), 10)) {
+		t.Fatal("hint not padded with trailing spaces")
+	}
+	narrow := hintBarText(10)
+	if ansi.StringWidth(narrow) != 10 {
+		t.Fatalf("hint truncated to %d cells, want 10", ansi.StringWidth(narrow))
+	}
+}
+
+// The daemon PTY is raw, so a child's bare \n must become \r\n on the host
+// terminal (raw mode, OPOST off) or it drops down a column.
+func TestCRLFInsertsCRBeforeBareLF(t *testing.T) {
+	if got, want := string(crlf([]byte("a\nb"))), "a\r\nb"; got != want {
+		t.Fatalf("crlf = %q, want %q", got, want)
+	}
+	// Existing CRLF is untouched (no double CR).
+	if got, want := string(crlf([]byte("a\r\nb"))), "a\r\nb"; got != want {
+		t.Fatalf("crlf = %q, want %q", got, want)
+	}
+	// No bare LF: the input buffer is returned unchanged (no allocation).
+	in := []byte("a\r\nb")
+	if out := crlf(in); &out[0] != &in[0] {
+		t.Fatal("crlf reallocated input with no bare LF")
 	}
 }

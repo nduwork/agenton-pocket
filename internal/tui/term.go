@@ -4,7 +4,7 @@ import (
 	"io"
 	"sync"
 
-	"github.com/nduwork/agenton-pocket/internal/client"
+	"golang.org/x/term"
 )
 
 // chanReader adapts a <-chan []byte (the daemon's PTY output stream from
@@ -49,26 +49,40 @@ func (r *chanReader) doneCh() <-chan struct{} { return r.done }
 // detach so goroutines waiting on doneCh don't leak.
 func (r *chanReader) stop() { r.once.Do(func() { close(r.done) }) }
 
-// forwardingWriter is the io.WriteCloser the emulator writes keyboard input
-// and terminal-query responses (DA/DSR) to. Each write is forwarded to the
-// daemon's PTY stdin as a text_input control frame.
-type forwardingWriter struct {
-	c  *client.Client
-	id uint32
-}
-
-func newForwardingWriter(c *client.Client, id uint32) *forwardingWriter {
-	return &forwardingWriter{c: c, id: id}
-}
-
-func (w *forwardingWriter) Write(p []byte) (int, error) {
-	if len(p) == 0 {
-		return 0, nil
+// makeRaw puts the terminal into raw mode: ECHO/ICANON/ISIG/ICRNL off so
+// keystrokes pass through unmodified (Enter = \r, ctrl+c = 0x03, no line
+// buffering). Returns a restore function.
+func makeRaw(fd int) (func() error, error) {
+	old, err := term.MakeRaw(fd)
+	if err != nil {
+		return nil, err
 	}
-	if err := w.c.TextInput(w.id, string(p)); err != nil {
-		return 0, err
-	}
-	return len(p), nil
+	return func() error { return term.Restore(fd, old) }, nil
 }
 
-func (w *forwardingWriter) Close() error { return nil }
+// crlf inserts \r before bare \n bytes so the host terminal (raw mode, OPOST
+// off) renders the agent's newlines as CRLF instead of dropping down a column.
+// The daemon PTY is raw, so a child's \n stays \n; most output already carries
+// \r\n, and this only touches the bare ones. Escape sequences never contain \n
+// (params/final bytes are 0x20-0x7E), so scanning is safe. Returns b unchanged
+// when there is nothing to fix.
+func crlf(b []byte) []byte {
+	hasBare := false
+	for i := 0; i < len(b); i++ {
+		if b[i] == '\n' && (i == 0 || b[i-1] != '\r') {
+			hasBare = true
+			break
+		}
+	}
+	if !hasBare {
+		return b
+	}
+	out := make([]byte, 0, len(b)+8)
+	for i := 0; i < len(b); i++ {
+		if b[i] == '\n' && (i == 0 || b[i-1] != '\r') {
+			out = append(out, '\r')
+		}
+		out = append(out, b[i])
+	}
+	return out
+}
