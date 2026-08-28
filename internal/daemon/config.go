@@ -56,6 +56,7 @@ type agentKeys struct {
 	modeSwitch []string
 	interrupt  []string
 	newChat    []string // start a fresh conversation (/clear, /new, …)
+	exit       []string // quit the agent (Ctrl+C for most, Ctrl+D for pi)
 }
 
 // keysForCommand resolves the fixed button sequences for a session's command
@@ -75,6 +76,7 @@ func keysForCommand(cmdLine string) agentKeys {
 			modeSwitch: []string{"Shift+Tab"},
 			interrupt:  []string{"Esc"},
 			newChat:    []string{"/clear", "Enter"},
+			exit:       []string{"Ctrl+C"},
 		}
 	case strings.Contains(strings.ToLower(cmdLine), "codex"):
 		return agentKeys{
@@ -82,6 +84,7 @@ func keysForCommand(cmdLine string) agentKeys {
 			modeSwitch: []string{"Shift+Tab"},
 			interrupt:  []string{"Esc"},
 			newChat:    []string{"/new", "Enter"},
+			exit:       []string{"Ctrl+C"},
 		}
 	case strings.Contains(strings.ToLower(cmdLine), "opencode"):
 		// opencode: Esc interrupts (session_interrupt), Ctrl+C exits (app_exit),
@@ -93,6 +96,20 @@ func keysForCommand(cmdLine string) agentKeys {
 			modeSwitch: []string{"Shift+Tab"},
 			interrupt:  []string{"Esc"},
 			newChat:    []string{"Ctrl+X", "n"},
+			exit:       []string{"Ctrl+C"},
+		}
+	case firstWordBase(cmdLine) == "pi":
+		// pi has no built-in tool-approval prompt (no sandbox), so "reject" is
+		// just abort — Esc, like codex. Shift+Tab cycles the thinking level,
+		// which is pi's "mode". /new starts a fresh session. pi exits on Ctrl+D
+		// (Ctrl+C only clears its editor). Matched by executable basename, not a
+		// substring — "pi" is too short and would false-match pip/paths/text.
+		return agentKeys{
+			reject:     []string{"Esc"},
+			modeSwitch: []string{"Shift+Tab"},
+			interrupt:  []string{"Esc"},
+			newChat:    []string{"/new", "Enter"},
+			exit:       []string{"Ctrl+D"},
 		}
 	default:
 		return agentKeys{
@@ -100,6 +117,7 @@ func keysForCommand(cmdLine string) agentKeys {
 			interrupt: []string{"Ctrl+C"},
 			// plain shells have no "new conversation"; clear-screen is the analog
 			newChat: []string{"Ctrl+L"},
+			exit:    []string{"Ctrl+C"},
 		}
 	}
 }
@@ -108,7 +126,9 @@ func keysForCommand(cmdLine string) agentKeys {
 // when the preset leaves them empty; an explicit [buttons] table always wins.
 func applyButtonDefaults(p *Preset) {
 	cmdLine := strings.Join(append([]string{p.Command}, p.Args...), " ")
-	if p.Buttons.Custom2 == "" && strings.Contains(strings.ToLower(cmdLine), "claude") {
+	// claude and pi both support /compact; default custom_2 to it.
+	if p.Buttons.Custom2 == "" &&
+		(strings.Contains(strings.ToLower(cmdLine), "claude") || firstWordBase(cmdLine) == "pi") {
 		p.Buttons.Custom2 = "/compact"
 	}
 }

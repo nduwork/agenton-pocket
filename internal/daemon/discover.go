@@ -12,7 +12,7 @@ import (
 // agentCmdRe matches command lines of agent CLIs worth surfacing as
 // suggestions. ponytail: name-based match — a wrapper script with a different
 // name won't be found; extend the alternation when a new agent matters.
-var agentCmdRe = regexp.MustCompile(`^(?:\S*/)?(claude|codex|opencode|cortext)(?:\s|$)|^(?:\S*/)?ollama\s+run\s`)
+var agentCmdRe = regexp.MustCompile(`^(?:\S*/)?(claude|codex|opencode|cortext|pi)(?:\s|$)|^(?:\S*/)?ollama\s+run\s`)
 
 type proc struct {
 	pid int

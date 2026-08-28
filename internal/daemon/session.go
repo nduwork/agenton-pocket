@@ -423,10 +423,10 @@ func (s *Session) actionSequence(action string) []string {
 	case "interrupt":
 		return s.currentKeys().interrupt
 	case "exit":
-		// Universal quit: Ctrl+C is the exit key for claude, codex, opencode and
-		// plain shells alike. One press per tap (native behavior) — claude/codex
-		// need two to fully exit, opencode/shells one.
-		return []string{"Ctrl+C"}
+		// Quit the agent, per agent: Ctrl+C for claude, codex, opencode and plain
+		// shells; Ctrl+D for pi (its Ctrl+C only clears the editor). One press per
+		// tap (native behavior) — claude/codex need two to fully exit, the rest one.
+		return s.currentKeys().exit
 	case "rewind":
 		// Edit-previous / rewind menu in both claude and codex.
 		return []string{"Esc", "Esc"}

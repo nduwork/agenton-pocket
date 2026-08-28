@@ -58,18 +58,23 @@ func TestLoadConfigEmptyFile(t *testing.T) {
 
 func TestKeysForCommand(t *testing.T) {
 	cases := []struct {
-		name    string
-		cmdLine string
-		wantRej []string
-		wantMod []string
-		wantInt []string
-		wantNew []string
+		name     string
+		cmdLine  string
+		wantRej  []string
+		wantMod  []string
+		wantInt  []string
+		wantNew  []string
+		wantExit []string
 	}{
-		{"claude direct", "claude", []string{"Esc"}, []string{"Shift+Tab"}, []string{"Esc"}, []string{"/clear", "Enter"}},
-		{"claude wrapped", "ollama launch claude --model gemma4:e4b", []string{"Esc"}, []string{"Shift+Tab"}, []string{"Esc"}, []string{"/clear", "Enter"}},
-		{"codex", "codex", []string{"Esc"}, []string{"Shift+Tab"}, []string{"Esc"}, []string{"/new", "Enter"}},
-		{"opencode", "opencode", []string{"Esc"}, []string{"Shift+Tab"}, []string{"Esc"}, []string{"Ctrl+X", "n"}},
-		{"shell", "bash", []string{"Ctrl+C"}, nil, []string{"Ctrl+C"}, []string{"Ctrl+L"}},
+		{"claude direct", "claude", []string{"Esc"}, []string{"Shift+Tab"}, []string{"Esc"}, []string{"/clear", "Enter"}, []string{"Ctrl+C"}},
+		{"claude wrapped", "ollama launch claude --model gemma4:e4b", []string{"Esc"}, []string{"Shift+Tab"}, []string{"Esc"}, []string{"/clear", "Enter"}, []string{"Ctrl+C"}},
+		{"codex", "codex", []string{"Esc"}, []string{"Shift+Tab"}, []string{"Esc"}, []string{"/new", "Enter"}, []string{"Ctrl+C"}},
+		{"opencode", "opencode", []string{"Esc"}, []string{"Shift+Tab"}, []string{"Esc"}, []string{"Ctrl+X", "n"}, []string{"Ctrl+C"}},
+		{"pi direct", "pi", []string{"Esc"}, []string{"Shift+Tab"}, []string{"Esc"}, []string{"/new", "Enter"}, []string{"Ctrl+D"}},
+		{"pi path", "/opt/homebrew/bin/pi --model x", []string{"Esc"}, []string{"Shift+Tab"}, []string{"Esc"}, []string{"/new", "Enter"}, []string{"Ctrl+D"}},
+		// "pi" is matched by executable basename, not substring: pip must not match.
+		{"pip not pi", "pip install foo", []string{"Ctrl+C"}, nil, []string{"Ctrl+C"}, []string{"Ctrl+L"}, []string{"Ctrl+C"}},
+		{"shell", "bash", []string{"Ctrl+C"}, nil, []string{"Ctrl+C"}, []string{"Ctrl+L"}, []string{"Ctrl+C"}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -85,6 +90,9 @@ func TestKeysForCommand(t *testing.T) {
 			}
 			if !equalSeq(k.newChat, c.wantNew) {
 				t.Errorf("new_chat = %v, want %v", k.newChat, c.wantNew)
+			}
+			if !equalSeq(k.exit, c.wantExit) {
+				t.Errorf("exit = %v, want %v", k.exit, c.wantExit)
 			}
 		})
 	}
@@ -102,6 +110,12 @@ func TestApplyButtonDefaultsKeepsExplicit(t *testing.T) {
 	applyButtonDefaults(&p)
 	if p.Buttons.Custom2 != "/clear" {
 		t.Fatalf("explicit custom_2 overridden: %v", p.Buttons.Custom2)
+	}
+	// pi supports /compact too, so it gets the same default.
+	p = Preset{Command: "pi"}
+	applyButtonDefaults(&p)
+	if p.Buttons.Custom2 != "/compact" {
+		t.Fatalf("pi custom_2 not defaulted: %v", p.Buttons.Custom2)
 	}
 }
 

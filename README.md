@@ -177,7 +177,7 @@ typing at the desk.
 
 - **New-session suggestions**: chips above the form — sessions currently
   running under the daemon, agent processes discovered elsewhere on the host
-  (`claude`/`codex`/`cortext`/`ollama run`, clonable but not attachable),
+  (`claude`/`codex`/`opencode`/`pi`/`cortext`/`ollama run`, clonable but not attachable),
   your recent commands (per-device), then starters. Tap to fill, edit, go.
 - **Rebind custom buttons**: long-press Custom 1/2 → tap-to-compose picker
   (chips for keys/combos, text field for literal strings) — no combo typing
@@ -206,8 +206,8 @@ Presets pin an agent + cwd + custom buttons under a name:
     command = "claude"
 
     # Only the two custom buttons are configurable; accept/reject/mode/
-    # interrupt/rewind are fixed per agent (claude/codex/shell), detected
-    # from the session's command line. Each custom button holds one value:
+    # interrupt/rewind/exit are fixed per agent (claude/codex/opencode/pi/shell),
+    # detected from the session's command line. Each custom button holds one value:
     # a key name / combo (Ctrl+O, Shift+Tab, Esc, ...) or a literal string.
     [preset.api-refactor.buttons]
     custom_1    = "Ctrl+O"

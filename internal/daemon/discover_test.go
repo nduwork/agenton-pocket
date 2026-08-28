@@ -54,6 +54,19 @@ func TestUpdateLiveAgent(t *testing.T) {
 	}
 }
 
+// pi must be detected too — its keys are wired in keysForCommand. The regex is
+// executable-anchored, so `pip` (and other pi-prefixed commands) must not match.
+func TestAgentUnderDetectsPi(t *testing.T) {
+	tree := parseProcTree("  600     1 /bin/zsh -l\n  700   600 /opt/homebrew/bin/pi --model x\n")
+	if got := tree.agentUnder(600); got != "pi" {
+		t.Errorf("agentUnder(shell with pi) = %q, want pi", got)
+	}
+	tree = parseProcTree("  600     1 /bin/zsh -l\n  700   600 pip install foo\n")
+	if got := tree.agentUnder(600); got != "" {
+		t.Errorf("agentUnder(shell with pip) = %q, want empty", got)
+	}
+}
+
 func TestFirstWordBase(t *testing.T) {
 	cases := map[string]string{
 		"claude":                       "claude",
