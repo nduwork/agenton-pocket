@@ -1,6 +1,6 @@
 module github.com/nduwork/agenton-pocket
 
-go 1.26.5
+go 1.26.6
 
 require (
 	github.com/BurntSushi/toml v1.6.0
@@ -13,7 +13,7 @@ require (
 	github.com/creack/pty v1.1.24
 	github.com/mdp/qrterminal/v3 v3.2.1
 	golang.org/x/sys v0.47.0
-	tailscale.com v1.102.2
+	tailscale.com v1.102.4
 )
 
 require (
