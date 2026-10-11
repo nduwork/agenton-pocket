@@ -12,7 +12,7 @@ require (
 	github.com/coder/websocket v1.8.15
 	github.com/creack/pty v1.1.24
 	github.com/mdp/qrterminal/v3 v3.2.1
-	golang.org/x/sys v0.47.0
+	golang.org/x/sys v0.49.0
 	tailscale.com v1.102.2
 )
 
