@@ -7,7 +7,7 @@ require (
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/charmbracelet/ultraviolet v0.0.0-20260615092913-2399af76d5b1
-	github.com/charmbracelet/x/ansi v0.11.7
+	github.com/charmbracelet/x/ansi v0.11.9
 	github.com/charmbracelet/x/vt v0.0.0-20260615092313-b57e5e6d29bb
 	github.com/coder/websocket v1.8.15
 	github.com/creack/pty v1.1.24
@@ -35,10 +35,10 @@ require (
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/hdevalence/ed25519consensus v0.2.0 // indirect
 	github.com/jsimonetti/rtnetlink v1.4.1 // indirect
-	github.com/lucasb-eyer/go-colorful v1.4.0 // indirect
+	github.com/lucasb-eyer/go-colorful v1.4.1 // indirect
 	github.com/mattn/go-isatty v0.0.23 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
-	github.com/mattn/go-runewidth v0.0.24 // indirect
+	github.com/mattn/go-runewidth v0.0.27 // indirect
 	github.com/mdlayher/netlink v1.7.3-0.20250113171957-fbb4dce95f42 // indirect
 	github.com/mdlayher/socket v0.5.0 // indirect
 	github.com/mitchellh/go-ps v1.0.0 // indirect
