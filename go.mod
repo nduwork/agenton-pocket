@@ -8,7 +8,7 @@ require (
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/charmbracelet/ultraviolet v0.0.0-20260615092913-2399af76d5b1
 	github.com/charmbracelet/x/ansi v0.11.7
-	github.com/charmbracelet/x/vt v0.0.0-20260615092313-b57e5e6d29bb
+	github.com/charmbracelet/x/vt v0.1.0
 	github.com/coder/websocket v1.8.15
 	github.com/creack/pty v1.1.24
 	github.com/mdp/qrterminal/v3 v3.2.1
